@@ -17,9 +17,15 @@ public class Table implements Iterable<Row> {
   private String filename;
   public ArrayList<Column> columns;
   public BPlusTree<Entry, Row> index;
-  private int primaryIndex;
+    // 每张表由一颗B+树索引
+    // primary key为key，row为value
+  private int primaryIndex; // columns中的主键index
 
-  public Table(String databaseName, String tableName, Column[] columns) throws Exception {
+  public Table(String databaseName, String tableName, Column[] columns)
+          throws Exception
+            // 新建表
+            // columns[] 每一列的元信息
+  {
     this.databaseName = databaseName;
     this.tableName = tableName;
 
@@ -27,7 +33,7 @@ public class Table implements Iterable<Row> {
     Collections.addAll(this.columns, columns);
 
     this.filename = this.databaseName + "/" + this.tableName;
-    File metaFile = new File(this.filename + ".meta");
+    File metaFile = new File(this.filename + ".meta"); // 元数据
     File dataFile = new File(this.filename + ".data");
     metaFile.createNewFile();
     dataFile.createNewFile();
@@ -42,14 +48,10 @@ public class Table implements Iterable<Row> {
 
     // check null
     for (int i = 0; i < n; ++ i) {
-      Object val = row.entries.get(i);
-      String[] column = this.columns.get(i).toString().split(",");
-      // val is null
-      if (val == null) {
-        // col can't be null
-        if (column[3] == "0")
-          throw new NDException(column[0] + " can't be null");
-        i++;
+      Entry val = row.entries.get(i);
+      if (val == null && this.columns.get(i).notNull()) {
+        // 该列不能为null
+        throw new NDException(this.columns.get(i).name() + " can't be null");
       }
     }
 
@@ -58,13 +60,11 @@ public class Table implements Iterable<Row> {
     }
   }
 
-  public void delete(Row row) {
-    if (this.primaryIndex!=-1) {
-      this.index.remove(row.entries.get(this.primaryIndex));
-    }
+  public void delete(Entry entry) {
+    this.index.remove(entry);
   }
 
-  public void update() {
+  public void update(Entry entry) {
     // TODO
   }
 

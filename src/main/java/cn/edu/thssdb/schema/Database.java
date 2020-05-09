@@ -4,6 +4,7 @@ import cn.edu.thssdb.query.QueryResult;
 import cn.edu.thssdb.query.QueryTable;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import cn.edu.thssdb.schema.Table;
 
 public class Database {
 
@@ -22,12 +23,15 @@ public class Database {
     // TODO
   }
 
-  public void create(String name, Column[] columns) {
-    // TODO
+  public void create(String name, Column[] columns) throws Exception {
+    // 新建表
+    Table newTable = new Table(this.name, name, columns);
+    tables.put(name, newTable);
   }
 
-  public void drop() {
-    // TODO
+  public void drop(String name) {
+    // 删除表
+    tables.remove(name);
   }
 
   public String select(QueryTable[] queryTables) {
