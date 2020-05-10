@@ -37,17 +37,20 @@ public class Table implements Iterable<Row>, Serializable {
     this.tableDir = this.databaseDir + "/" + this.tableName;
     File tableDir = new File(this.tableDir);
     System.out.println(this.tableDir);
-    if (!tableDir.exists()) {
-      tableDir.mkdir();
-    }
     File metaFile = new File(this.tableDir + "/" + this.tableName + ".meta"); // 元数据
     File dataFile = new File(this.tableDir + "/" + this.tableName + ".data");
-    metaFile.createNewFile();
-    dataFile.createNewFile();
+    if (!tableDir.exists()) {
+      tableDir.mkdir();
+      metaFile.createNewFile();
+      dataFile.createNewFile();
+    }
+    else {
+      recover();
+    }
   }
 
   private void recover() {
-    // TODO
+    // 从磁盘恢复表
   }
 
   public void insert(Row row) throws NDException {
@@ -86,24 +89,39 @@ public class Table implements Iterable<Row>, Serializable {
   }
 
   public void persist() {
+    // 持久化到磁盘
+    System.out.println(this.tableName + ": persist");
+    serialize();
+    saveMetaData();
+  }
+
+  private void serialize() {
+    // 序列化存储数据
     try {
-      System.out.println(this.tableName + "persist");
       FileOutputStream fileOut = new FileOutputStream(this.tableDir + "/" + this.tableName + ".data");
       ObjectOutputStream out = new ObjectOutputStream(fileOut);
-      out.writeObject(this);
+      out.writeObject(this.index);
       out.close();
       fileOut.close();
       System.out.println("Serialized data is saved in " + this.tableDir + "/" + this.tableName + ".data");
     } catch(IOException i) {
       i.printStackTrace();
     }
-
   }
 
-  private void serialize() {
-    // TODO
+  private void saveMetaData() {
+    // 存储元数据（表的结构）
+    try {
+      FileOutputStream fileOut = new FileOutputStream(this.tableDir + "/" + this.tableName + ".meta");
+      ObjectOutputStream out = new ObjectOutputStream(fileOut);
+      out.writeObject(this.columns);
+      out.close();
+      fileOut.close();
+      System.out.println("Serialized metadata is saved in " + this.tableDir + "/" + this.tableName + ".meta");
+    } catch(IOException i) {
+      i.printStackTrace();
+    }
   }
-
   private ArrayList<Row> deserialize() {
     // TODO
     return null;

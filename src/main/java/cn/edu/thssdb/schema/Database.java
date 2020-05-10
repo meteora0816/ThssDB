@@ -3,34 +3,34 @@ package cn.edu.thssdb.schema;
 import cn.edu.thssdb.query.QueryResult;
 import cn.edu.thssdb.query.QueryTable;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import cn.edu.thssdb.schema.Table;
 
 public class Database {
 
-  private String baseDir;
-  private String name;
-  private String DBdir;
-  private HashMap<String, Table> tables;
+  private String name; // 数据库名称
+  private String DBdir; // 数据库存储路径
+  private HashMap<String, Table> tables; // 数据库中的所有表
   ReentrantReadWriteLock lock;
 
   public Database(String baseDir, String name) throws IOException {
-    this.baseDir = baseDir;
+    // baseDir 存储根目录, name 数据库名称
     this.name = name;
+    this.DBdir = baseDir + '/' + name;
     this.tables = new HashMap<>();
     this.lock = new ReentrantReadWriteLock();
 
-    this.DBdir = baseDir + '/' + name;
     File DBmeta = new File(this.DBdir + "/" + this.name + ".meta");
     File DB = new File(this.DBdir);
     if (!DB.exists()) {
       DB.mkdir();
       DBmeta.createNewFile();
     }
-    recover();
+    else {
+      recover();
+    }
   }
 
   public void create(String name, Column[] columns) throws Exception {
@@ -55,17 +55,33 @@ public class Database {
   }
 
   private void recover() {
-    // 从磁盘恢复
+    // 从磁盘恢复数据库
+
   }
 
   private void persist() {
     // 变更存储到磁盘
     System.out.println("database: persist");
+    // 每一张表分别存储
     for (String key : tables.keySet()) {
-      System.out.println(key);
       Table table = tables.get(key);
       table.persist();
     }
+    // 存储元数据（有哪些表）
+    try {
+      OutputStream fop = new FileOutputStream(this.DBdir + "/" + this.name + ".meta");
+      OutputStreamWriter writer = new OutputStreamWriter(fop, "UTF-8");
+      writer.append(String.valueOf(tables.size()));
+      writer.append("\r\n");
+      for (String key : tables.keySet()) {
+        writer.append(key).append("\r\n");
+      }
+      writer.close();
+      fop.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
   }
 
   public void quit() {
