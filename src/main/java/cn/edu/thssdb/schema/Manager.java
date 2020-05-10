@@ -3,8 +3,7 @@ package cn.edu.thssdb.schema;
 import cn.edu.thssdb.server.ThssDB;
 
 import javax.xml.crypto.Data;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -46,6 +45,9 @@ public class Manager {
 
   public void switchDatabase(String name) throws IOException {
     // 切换数据库，如果没有就新建
+    if (currentDB != null) {
+      currentDB.quit();
+    }
     if (databases.containsKey(name)) {
       currentDB = databases.get(name);
     }
@@ -59,6 +61,22 @@ public class Manager {
     return currentDB;
   }
 
+  public void quit() {
+    // 存储元数据（有哪些数据库）
+    try {
+      OutputStream fop = new FileOutputStream(this.baseDir + "/" + metaFile);
+      OutputStreamWriter writer = new OutputStreamWriter(fop, "UTF-8");
+      writer.append(String.valueOf(databases.size()));
+      writer.append("\r\n");
+      for (String key : databases.keySet()) {
+        writer.append(key).append("\r\n");
+      }
+      writer.close();
+      fop.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
   private static class ManagerHolder {
     private static Manager INSTANCE;
 

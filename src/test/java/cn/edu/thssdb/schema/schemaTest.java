@@ -73,6 +73,7 @@ public class schemaTest {
     public void testPersist() throws Exception {
         Database DB = this.manager.getCurrentDB();
         DB.quit();
+        manager.quit();
     }
 
 
