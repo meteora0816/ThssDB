@@ -3,25 +3,36 @@ package cn.edu.thssdb.schema;
 import cn.edu.thssdb.server.ThssDB;
 
 import javax.xml.crypto.Data;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Manager {
   private HashMap<String, Database> databases;
   private Database currentDB;
+  private String baseDir = "data";
+  private String metaFile = "DB.meta";
   private static ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
   public static Manager getInstance() {
     return Manager.ManagerHolder.INSTANCE;
   }
 
-  public Manager() {
+  public Manager() throws IOException {
     // TODO
     databases = new HashMap<>();
+
+    File DBDir = new File(baseDir);
+    File DBmeta = new File(baseDir+"/"+metaFile);
+    if (!DBDir.exists()) {
+      DBDir.mkdir();
+      DBmeta.createNewFile();
+    }
   }
 
-  private Database createDatabaseIfNotExists(String name) {
-    Database newDB = new Database(name);
+  private Database createDatabaseIfNotExists(String name) throws IOException {
+    Database newDB = new Database(baseDir, name);
     databases.put(name, newDB);
     return newDB;
   }
@@ -33,7 +44,7 @@ public class Manager {
     }
   }
 
-  public void switchDatabase(String name) {
+  public void switchDatabase(String name) throws IOException {
     if (databases.containsKey(name)) {
       currentDB = databases.get(name);
     }
@@ -48,7 +59,16 @@ public class Manager {
   }
 
   private static class ManagerHolder {
-    private static final Manager INSTANCE = new Manager();
+    private static Manager INSTANCE;
+
+    static {
+      try {
+        INSTANCE = new Manager();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
     private ManagerHolder() {
 
     }

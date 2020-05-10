@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Table implements Iterable<Row> {
   ReentrantReadWriteLock lock;
-  private String databaseName;
+  private String databaseDir;
   public String tableName;
   private String filename;
   public ArrayList<Column> columns;
@@ -21,20 +21,26 @@ public class Table implements Iterable<Row> {
     // primary key为key，row为value
   private int primaryIndex; // columns中的主键index
 
-  public Table(String databaseName, String tableName, Column[] columns)
+  public Table(String databaseDir, String tableName, Column[] columns)
           throws Exception
             // 新建表
             // columns[] 每一列的元信息
   {
-    this.databaseName = databaseName;
+    this.databaseDir = databaseDir;
     this.tableName = tableName;
 
     this.primaryIndex = -1;
+    this.columns = new ArrayList<>();
     Collections.addAll(this.columns, columns);
 
-    this.filename = this.databaseName + "/" + this.tableName;
-    File metaFile = new File(this.filename + ".meta"); // 元数据
-    File dataFile = new File(this.filename + ".data");
+    this.filename = this.databaseDir + "/" + this.tableName;
+    File tableDir = new File(this.filename);
+    System.out.println(this.filename);
+    if (!tableDir.exists()) {
+      tableDir.mkdir();
+    }
+    File metaFile = new File(this.filename + "/" + this.tableName + ".meta"); // 元数据
+    File dataFile = new File(this.filename + "/" + this.tableName + ".data");
     metaFile.createNewFile();
     dataFile.createNewFile();
   }
