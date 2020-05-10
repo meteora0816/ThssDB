@@ -3,6 +3,7 @@ package cn.edu.thssdb.schema;
 import java.io.Serializable;
 
 public class Entry implements Comparable<Entry>, Serializable {
+  // 某一行记录在表中某一列的数据
   private static final long serialVersionUID = -5809782578272943999L;
   public Comparable value;
 

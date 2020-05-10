@@ -28,8 +28,9 @@ public class Table implements Iterable<Row> {
   {
     this.databaseDir = databaseDir;
     this.tableName = tableName;
+    this.index = new BPlusTree<>();
 
-    this.primaryIndex = -1;
+    this.primaryIndex = 0;
     this.columns = new ArrayList<>();
     Collections.addAll(this.columns, columns);
 
@@ -67,11 +68,25 @@ public class Table implements Iterable<Row> {
   }
 
   public void delete(Entry entry) {
+    System.out.println(entry);
     this.index.remove(entry);
   }
 
   public void update(Entry entry) {
     // TODO
+  }
+
+  public Row getRow(Entry primarykey) {
+    if (this.index.contains(primarykey)) {
+      return this.index.get(primarykey);
+    }
+    else {
+      return null;
+    }
+  }
+
+  public void persist() {
+
   }
 
   private void serialize() {

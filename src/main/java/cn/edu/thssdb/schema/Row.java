@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.StringJoiner;
 
 public class Row implements Serializable {
+  // 某一行记录在表中所有列的数据
   private static final long serialVersionUID = -5809782578272943999L;
   protected ArrayList<Entry> entries;
 
@@ -34,3 +35,4 @@ public class Row implements Serializable {
     return sj.toString();
   }
 }
+

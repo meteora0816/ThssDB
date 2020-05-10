@@ -45,6 +45,7 @@ public class Manager {
   }
 
   public void switchDatabase(String name) throws IOException {
+    // 切换数据库，如果没有就新建
     if (databases.containsKey(name)) {
       currentDB = databases.get(name);
     }

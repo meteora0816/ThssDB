@@ -33,10 +33,6 @@ public class Database {
     recover();
   }
 
-  private void persist() {
-    // TODO
-  }
-
   public void create(String name, Column[] columns) throws Exception {
     // 新建表
     Table newTable = new Table(this.DBdir, name, columns);
@@ -54,11 +50,26 @@ public class Database {
     return null;
   }
 
+  public Table getTable(String name) {
+    return tables.get(name);
+  }
+
   private void recover() {
-    // TODO
+    // 从磁盘恢复
+  }
+
+  private void persist() {
+    // 变更存储到磁盘
+    System.out.println("database: persist");
+    for (String key : tables.keySet()) {
+      System.out.println("  " + key);
+      Table table = tables.get(key);
+      table.persist();
+    }
   }
 
   public void quit() {
-    // TODO
+    // 退出数据库
+    this.persist();
   }
 }
