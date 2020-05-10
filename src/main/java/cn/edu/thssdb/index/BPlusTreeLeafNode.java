@@ -4,10 +4,11 @@ import cn.edu.thssdb.exception.DuplicateKeyException;
 import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.utils.Global;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class BPlusTreeLeafNode<K extends Comparable<K>, V> extends BPlusTreeNode<K, V> {
+public class BPlusTreeLeafNode<K extends Comparable<K>, V> extends BPlusTreeNode<K, V> implements Serializable {
 
   ArrayList<V> values;
   private BPlusTreeLeafNode<K, V> next;

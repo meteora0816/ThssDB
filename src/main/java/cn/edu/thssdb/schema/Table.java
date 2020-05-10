@@ -10,11 +10,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class Table implements Iterable<Row> {
+public class Table implements Iterable<Row>, Serializable {
   ReentrantReadWriteLock lock;
   private String databaseDir;
   public String tableName;
-  private String filename;
+  private String tableDir;
   public ArrayList<Column> columns;
   public BPlusTree<Entry, Row> index;
     // 每张表由一颗B+树索引
@@ -34,14 +34,14 @@ public class Table implements Iterable<Row> {
     this.columns = new ArrayList<>();
     Collections.addAll(this.columns, columns);
 
-    this.filename = this.databaseDir + "/" + this.tableName;
-    File tableDir = new File(this.filename);
-    System.out.println(this.filename);
+    this.tableDir = this.databaseDir + "/" + this.tableName;
+    File tableDir = new File(this.tableDir);
+    System.out.println(this.tableDir);
     if (!tableDir.exists()) {
       tableDir.mkdir();
     }
-    File metaFile = new File(this.filename + "/" + this.tableName + ".meta"); // 元数据
-    File dataFile = new File(this.filename + "/" + this.tableName + ".data");
+    File metaFile = new File(this.tableDir + "/" + this.tableName + ".meta"); // 元数据
+    File dataFile = new File(this.tableDir + "/" + this.tableName + ".data");
     metaFile.createNewFile();
     dataFile.createNewFile();
   }
@@ -86,6 +86,17 @@ public class Table implements Iterable<Row> {
   }
 
   public void persist() {
+    try {
+      System.out.println(this.tableName + "persist");
+      FileOutputStream fileOut = new FileOutputStream(this.tableDir + "/" + this.tableName + ".data");
+      ObjectOutputStream out = new ObjectOutputStream(fileOut);
+      out.writeObject(this);
+      out.close();
+      fileOut.close();
+      System.out.println("Serialized data is saved in " + this.tableDir + "/" + this.tableName + ".data");
+    } catch(IOException i) {
+      i.printStackTrace();
+    }
 
   }
 

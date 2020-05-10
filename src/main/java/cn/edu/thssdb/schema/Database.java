@@ -62,7 +62,7 @@ public class Database {
     // 变更存储到磁盘
     System.out.println("database: persist");
     for (String key : tables.keySet()) {
-      System.out.println("  " + key);
+      System.out.println(key);
       Table table = tables.get(key);
       table.persist();
     }
