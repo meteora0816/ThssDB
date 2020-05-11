@@ -19,7 +19,6 @@ public class Manager {
   }
 
   public Manager() throws IOException {
-    // TODO
     databases = new HashMap<>();
 
     File DBDir = new File(baseDir);
@@ -27,6 +26,9 @@ public class Manager {
     if (!DBDir.exists()) {
       DBDir.mkdir();
       DBmeta.createNewFile();
+    }
+    else {
+      recover();
     }
   }
 
@@ -63,13 +65,18 @@ public class Manager {
 
   public void quit() {
     // 存储元数据（有哪些数据库）
+    /* DB.meta
+       database num
+       database1
+       database2
+       ... */
     try {
       OutputStream fop = new FileOutputStream(this.baseDir + "/" + metaFile);
       OutputStreamWriter writer = new OutputStreamWriter(fop, "UTF-8");
       writer.append(String.valueOf(databases.size()));
-      writer.append("\r\n");
+      writer.append("|");
       for (String key : databases.keySet()) {
-        writer.append(key).append("\r\n");
+        writer.append(key).append("|");
       }
       writer.close();
       fop.close();
@@ -77,6 +84,11 @@ public class Manager {
       e.printStackTrace();
     }
   }
+
+  private void recover() {
+
+  }
+
   private static class ManagerHolder {
     private static Manager INSTANCE;
 

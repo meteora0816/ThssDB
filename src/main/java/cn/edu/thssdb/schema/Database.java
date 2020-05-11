@@ -29,14 +29,19 @@ public class Database {
       DBmeta.createNewFile();
     }
     else {
-      recover();
+      recover(DBmeta);
     }
   }
 
   public void create(String name, Column[] columns) throws Exception {
     // 新建表
-    Table newTable = new Table(this.DBdir, name, columns);
-    tables.put(name, newTable);
+    if (tables.containsKey(name)) {
+      System.out.println("table " + name + " already exist.");
+    }
+    else {
+      Table newTable = new Table(this.DBdir, name, columns);
+      tables.put(name, newTable);
+    }
   }
 
   public void drop(String name) {
@@ -55,8 +60,24 @@ public class Database {
     return tables.get(name);
   }
 
-  private void recover() {
+  private void recover(File DBmeta) {
     // TODO 从磁盘恢复数据库
+    System.out.println("Recover database " + this.name);
+    try {
+      FileReader reader = new FileReader(DBmeta);
+      char[] buf = new char[1024];
+      reader.read(buf);
+      String[] vals = String.valueOf(buf).split("\\|");
+      System.out.println(vals[0] + "table(s)");
+      int tableNum = Integer.parseInt(vals[0]);
+      for (int i=0;i<tableNum;i++) {
+        String tableName = vals[i+1];
+        // Table newTable = new Table(this.DBdir, tableName);
+        // tables.put(tableName, newTable);
+      }
+    } catch(IOException e) {
+      e.printStackTrace();
+    }
 
   }
 
@@ -73,9 +94,9 @@ public class Database {
       OutputStream fop = new FileOutputStream(this.DBdir + "/" + this.name + ".meta");
       OutputStreamWriter writer = new OutputStreamWriter(fop, "UTF-8");
       writer.append(String.valueOf(tables.size()));
-      writer.append("\r\n");
+      writer.append("|");
       for (String key : tables.keySet()) {
-        writer.append(key).append("\r\n");
+        writer.append(key).append("|");
       }
       writer.close();
       fop.close();
