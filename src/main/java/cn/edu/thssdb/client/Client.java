@@ -1,5 +1,7 @@
 package cn.edu.thssdb.client;
 
+import cn.edu.thssdb.rpc.thrift.ConnectReq;
+import cn.edu.thssdb.rpc.thrift.ConnectResp;
 import cn.edu.thssdb.rpc.thrift.GetTimeReq;
 import cn.edu.thssdb.rpc.thrift.IService;
 import cn.edu.thssdb.utils.Global;
@@ -68,6 +70,15 @@ public class Client {
           case Global.QUIT:
             open = false;
             break;
+          case Global.CONN:
+            println("Please enter your username:");
+            print(Global.CLI_PREFIX);
+            String usr = SCANNER.nextLine().trim();
+            println("Please enter your password:");
+            print(Global.CLI_PREFIX);
+            String psw = SCANNER.nextLine().trim();
+            connect(usr, psw);
+            break;
           default:
             println("Invalid statements!");
             break;
@@ -92,7 +103,21 @@ public class Client {
       logger.error(e.getMessage());
     }
   }
-
+  // mock connect
+  private static void connect(String username, String password){
+    ConnectReq req = new ConnectReq(username, password);
+    try{
+      ConnectResp resp = client.connect(req);
+      if(resp.status.code == Global.SUCCESS_CODE){
+        println(resp.getSessionId()+"");
+      }
+      else{
+        println(resp.status.msg);
+      }
+    }catch (TException e){
+      logger.error(e.getMessage());
+    }
+  }
   static Options createOptions() {
     Options options = new Options();
     options.addOption(Option.builder(HELP_ARGS)

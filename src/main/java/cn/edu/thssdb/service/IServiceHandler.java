@@ -27,7 +27,18 @@ public class IServiceHandler implements IService.Iface {
   @Override
   public ConnectResp connect(ConnectReq req) throws TException {
     // TODO
-    return null;
+    ConnectResp resp = new ConnectResp();
+    // 需要实现用户信息管理，看用户名与密码是否匹配
+    // mock
+    if(req.username.equals("animal")&&req.password.equals("114514")){
+      resp.setSessionId(1919810);
+      resp.setStatus(new Status(Global.SUCCESS_CODE));
+    }else{
+      Status status = new Status(Global.FAILURE_CODE);
+      status.setMsg("BOOM!");
+      resp.setStatus(status);
+    }
+    return resp;
   }
 
   @Override
@@ -39,6 +50,7 @@ public class IServiceHandler implements IService.Iface {
   @Override
   public ExecuteStatementResp executeStatement(ExecuteStatementReq req) throws TException {
     // TODO
+    //需要根据具体数据库操作实现。
     return null;
   }
 }
