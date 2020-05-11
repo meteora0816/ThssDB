@@ -44,6 +44,7 @@ public class Client {
   private static IService.Client client;
   private static CommandLine commandLine;
 
+
   public static void main(String[] args) {
     commandLine = parseCmd(args);
     if (commandLine.hasOption(HELP_ARGS)) {
@@ -51,6 +52,7 @@ public class Client {
       return;
     }
     try {
+      long mSessionId;
       echoStarting();
       String host = commandLine.getOptionValue(HOST_ARGS, Global.DEFAULT_SERVER_HOST);
       int port = Integer.parseInt(commandLine.getOptionValue(PORT_ARGS, String.valueOf(Global.DEFAULT_SERVER_PORT)));
@@ -77,8 +79,10 @@ public class Client {
             println("Please enter your password:");
             print(Global.CLI_PREFIX);
             String psw = SCANNER.nextLine().trim();
-            connect(usr, psw);
+            mSessionId = connect(usr, psw);
             break;
+          case Global.DISC:
+
           default:
             println("Invalid statements!");
             break;
@@ -104,19 +108,26 @@ public class Client {
     }
   }
   // mock connect
-  private static void connect(String username, String password){
+  private static long connect(String username, String password){
     ConnectReq req = new ConnectReq(username, password);
     try{
       ConnectResp resp = client.connect(req);
       if(resp.status.code == Global.SUCCESS_CODE){
         println(resp.getSessionId()+"");
+        return resp.getSessionId();
       }
       else{
         println(resp.status.msg);
+        return -1;
       }
     }catch (TException e){
       logger.error(e.getMessage());
     }
+    return -1;
+  }
+  // mock disconnect
+  private static void disconnect(long SessionId){
+
   }
   static Options createOptions() {
     Options options = new Options();

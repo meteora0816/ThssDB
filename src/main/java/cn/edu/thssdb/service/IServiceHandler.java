@@ -1,14 +1,6 @@
 package cn.edu.thssdb.service;
 
-import cn.edu.thssdb.rpc.thrift.ConnectReq;
-import cn.edu.thssdb.rpc.thrift.ConnectResp;
-import cn.edu.thssdb.rpc.thrift.DisconnetResp;
-import cn.edu.thssdb.rpc.thrift.ExecuteStatementReq;
-import cn.edu.thssdb.rpc.thrift.ExecuteStatementResp;
-import cn.edu.thssdb.rpc.thrift.GetTimeReq;
-import cn.edu.thssdb.rpc.thrift.GetTimeResp;
-import cn.edu.thssdb.rpc.thrift.IService;
-import cn.edu.thssdb.rpc.thrift.Status;
+import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.utils.Global;
 import org.apache.thrift.TException;
 
@@ -42,8 +34,16 @@ public class IServiceHandler implements IService.Iface {
   }
 
   @Override
-  public DisconnetResp disconnect(DisconnetResp req) throws TException {
+  public DisconnetResp disconnect(DisconnetReq req) throws TException {
     // TODO
+    DisconnetResp resp = new DisconnetResp();
+    // mock 大致要检查传入的sessionId, 然后把它从池中移除
+    if(req.sessionId!=1919810){
+      resp.setStatus(new Status(Global.FAILURE_CODE));
+    }
+    else{
+      resp.setStatus(new Status(Global.SUCCESS_CODE));
+    }
     return null;
   }
 
