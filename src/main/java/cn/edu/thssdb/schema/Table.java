@@ -1,5 +1,6 @@
 package cn.edu.thssdb.schema;
 
+import cn.edu.thssdb.exception.DuplicateKeyException;
 import cn.edu.thssdb.index.BPlusTree;
 import cn.edu.thssdb.utils.NDException;
 import javafx.util.Pair;
@@ -103,7 +104,12 @@ public class Table implements Iterable<Row>, Serializable {
     }
 
     if (this.index != null) {
-      this.index.put(row.entries.get(this.primaryIndex), row);
+      try {
+        this.index.put(row.entries.get(this.primaryIndex), row);
+      } catch (DuplicateKeyException e) {
+        e.printStackTrace();
+      }
+
     }
   }
 
@@ -112,8 +118,13 @@ public class Table implements Iterable<Row>, Serializable {
     this.index.remove(entry);
   }
 
-  public void update(Entry entry) {
-    // TODO
+  public void update(Entry entry, Row row) {
+    if (this.index.contains(entry)) {
+      this.index.update(entry, row);
+    }
+    else {
+      System.out.println("Row " + entry.value + " doesn't exist.");
+    }
   }
 
   public Row getRow(Entry primarykey) {
