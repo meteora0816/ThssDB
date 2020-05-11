@@ -46,8 +46,8 @@ public class Database {
 
   public void drop(String name) {
     // 删除表
+    tables.get(name).drop();
     tables.remove(name);
-    // TODO 相应文件也需要删除
   }
 
   public String select(QueryTable[] queryTables) {
@@ -61,7 +61,7 @@ public class Database {
   }
 
   private void recover(File DBmeta) {
-    // TODO 从磁盘恢复数据库
+    // 从磁盘恢复数据库
     System.out.println("Recover database " + this.name);
     try {
       FileReader reader = new FileReader(DBmeta);

@@ -159,9 +159,16 @@ public class Table implements Iterable<Row>, Serializable {
       i.printStackTrace();
     }
   }
-  private ArrayList<Row> deserialize() {
-    // TODO
-    return null;
+
+  public void drop() {
+    // 删除文件
+    File file = new File(this.tableDir);
+    file.delete();
+    File[] files = file.listFiles();
+    for (int i=0;i<files.length;i++) {
+      files[i].delete();
+    }
+    file.delete();
   }
 
   private class TableIterator implements Iterator<Row> {

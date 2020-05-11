@@ -79,5 +79,10 @@ public class schemaTest {
         manager.quit();
     }
 
-
+    @Test
+    public void testDrop() throws Exception {
+        Database DB = this.manager.getCurrentDB();
+        DB.drop("table2");
+        manager.quit();
+    }
 }
