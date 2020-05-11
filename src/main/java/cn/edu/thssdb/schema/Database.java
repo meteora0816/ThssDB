@@ -46,8 +46,14 @@ public class Database {
 
   public void drop(String name) {
     // 删除表
-    tables.get(name).drop();
-    tables.remove(name);
+    if (tables.containsKey(name)) {
+      tables.get(name).drop();
+      tables.remove(name);
+    }
+    else {
+      System.out.println("table" + name + "doesn't exist.");
+    }
+
   }
 
   public String select(QueryTable[] queryTables) {
