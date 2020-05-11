@@ -68,12 +68,12 @@ public class Database {
       char[] buf = new char[1024];
       reader.read(buf);
       String[] vals = String.valueOf(buf).split("\\|");
-      System.out.println(vals[0] + "table(s)");
+      System.out.println(vals[0] + " table(s)");
       int tableNum = Integer.parseInt(vals[0]);
       for (int i=0;i<tableNum;i++) {
         String tableName = vals[i+1];
-        // Table newTable = new Table(this.DBdir, tableName);
-        // tables.put(tableName, newTable);
+        Table newTable = new Table(this.DBdir, tableName);
+        tables.put(tableName, newTable);
       }
     } catch(IOException e) {
       e.printStackTrace();
@@ -83,13 +83,15 @@ public class Database {
 
   private void persist() {
     // 变更存储到磁盘
-    System.out.println("database: persist");
+    System.out.println(this.name+ ": persist");
     // 每一张表分别存储
     for (String key : tables.keySet()) {
       Table table = tables.get(key);
       table.persist();
     }
     // 存储元数据（有哪些表）
+    /* databaseName.meta
+       Table Num|Table1|Table2|... */
     try {
       OutputStream fop = new FileOutputStream(this.DBdir + "/" + this.name + ".meta");
       OutputStreamWriter writer = new OutputStreamWriter(fop, "UTF-8");

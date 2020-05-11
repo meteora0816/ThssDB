@@ -65,11 +65,8 @@ public class Manager {
 
   public void quit() {
     // 存储元数据（有哪些数据库）
-    /* DB.meta
-       database num
-       database1
-       database2
-       ... */
+    /* DB.meta:
+       Database Num|Database1|Database2|... */
     try {
       OutputStream fop = new FileOutputStream(this.baseDir + "/" + metaFile);
       OutputStreamWriter writer = new OutputStreamWriter(fop, "UTF-8");

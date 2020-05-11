@@ -36,7 +36,7 @@ public class Table implements Iterable<Row>, Serializable {
 
     this.tableDir = this.databaseDir + "/" + this.tableName;
     File tableDir = new File(this.tableDir);
-    System.out.println(this.tableDir);
+    // System.out.println(this.tableDir);
     File metaFile = new File(this.tableDir + "/" + this.tableName + ".meta"); // 元数据
     File dataFile = new File(this.tableDir + "/" + this.tableName + ".data");
     if (!tableDir.exists()) {
@@ -45,12 +45,49 @@ public class Table implements Iterable<Row>, Serializable {
       dataFile.createNewFile();
     }
     else {
+      System.out.println("Table " + this.tableName + " already exist.");
+    }
+  }
+
+  public Table(String databaseDir, String tableName) {
+    // 恢复存储在磁盘的表
+    this.databaseDir = databaseDir;
+    this.tableName = tableName;
+    this.index = new BPlusTree<>();
+    this.primaryIndex = 0;
+    this.columns = new ArrayList<>();
+
+    this.tableDir = this.databaseDir + "/" + this.tableName;
+    File tableDir = new File(this.tableDir);
+    if (!tableDir.exists()) {
+      System.out.println("Table " + this.tableName + " doesn't exist.");
+    }
+    else {
       recover();
     }
   }
 
   private void recover() {
-    // 从磁盘恢复表
+    // 从磁盘恢复元数据和数据
+    System.out.println("Recover table " + this.tableName);
+    try {
+      FileInputStream fileIn = new FileInputStream(this.tableDir + "/" + this.tableName + ".meta");
+      ObjectInputStream in = new ObjectInputStream(fileIn);
+      this.columns = (ArrayList<Column>) in.readObject();
+      in.close();
+      fileIn.close();
+    } catch (IOException | ClassNotFoundException e) {
+      e.printStackTrace();
+    }
+    try {
+      FileInputStream fileIn = new FileInputStream(this.tableDir + "/" + this.tableName + ".data");
+      ObjectInputStream in = new ObjectInputStream(fileIn);
+      this.index = (BPlusTree<Entry, Row>) in.readObject();
+      in.close();
+      fileIn.close();
+    } catch (IOException | ClassNotFoundException e) {
+      e.printStackTrace();
+    }
   }
 
   public void insert(Row row) throws NDException {

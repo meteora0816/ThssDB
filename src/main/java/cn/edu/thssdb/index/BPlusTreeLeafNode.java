@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class BPlusTreeLeafNode<K extends Comparable<K>, V> extends BPlusTreeNode<K, V> implements Serializable {
+public class BPlusTreeLeafNode<K extends Comparable<K>, V> extends BPlusTreeNode<K, V> {
 
   ArrayList<V> values;
   private BPlusTreeLeafNode<K, V> next;

@@ -15,7 +15,7 @@ public class schemaTest {
         this.manager = Manager.getInstance();
         this.databaseName = "database1";
         this.manager.switchDatabase(this.databaseName);
-
+        /*
         Database DB = this.manager.getCurrentDB();
         Column[] columns = new Column[3];
         columns[0] = new Column("name", ColumnType.STRING, 0, false, 10);
@@ -46,6 +46,8 @@ public class schemaTest {
         Entries[2] = new Entry("CS");
         row= new Row(Entries);
         DB.getTable("table2").insert(row);
+        */
+
     }
     /*
     @Test
@@ -70,9 +72,10 @@ public class schemaTest {
     }*/
 
     @Test
-    public void testPersist() throws Exception {
+    public void testRecover() throws Exception {
         Database DB = this.manager.getCurrentDB();
-        DB.quit();
+        System.out.println(DB.getTable("table1").index.get(new Entry("lxy")));
+        System.out.println(DB.getTable("table2").index.get(new Entry("lixingyao")));
         manager.quit();
     }
 

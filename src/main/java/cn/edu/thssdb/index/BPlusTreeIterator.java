@@ -2,10 +2,11 @@ package cn.edu.thssdb.index;
 
 import javafx.util.Pair;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class BPlusTreeIterator<K extends Comparable<K>, V> implements Iterator<Pair<K, V>> {
+public class BPlusTreeIterator<K extends Comparable<K>, V> implements Iterator<Pair<K, V>>, Serializable {
   private LinkedList<BPlusTreeNode<K, V>> queue;
   private LinkedList<Pair<K, V>> buffer;
 
