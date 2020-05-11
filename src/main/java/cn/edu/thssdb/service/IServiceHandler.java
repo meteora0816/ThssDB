@@ -42,9 +42,10 @@ public class IServiceHandler implements IService.Iface {
       resp.setStatus(new Status(Global.FAILURE_CODE));
     }
     else{
+      // 可能要从池中移除session
       resp.setStatus(new Status(Global.SUCCESS_CODE));
     }
-    return null;
+    return resp;
   }
 
   @Override

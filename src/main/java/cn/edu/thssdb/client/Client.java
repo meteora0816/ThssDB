@@ -1,9 +1,6 @@
 package cn.edu.thssdb.client;
 
-import cn.edu.thssdb.rpc.thrift.ConnectReq;
-import cn.edu.thssdb.rpc.thrift.ConnectResp;
-import cn.edu.thssdb.rpc.thrift.GetTimeReq;
-import cn.edu.thssdb.rpc.thrift.IService;
+import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.utils.Global;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -52,7 +49,7 @@ public class Client {
       return;
     }
     try {
-      long mSessionId;
+      long mSessionId = -1;
       echoStarting();
       String host = commandLine.getOptionValue(HOST_ARGS, Global.DEFAULT_SERVER_HOST);
       int port = Integer.parseInt(commandLine.getOptionValue(PORT_ARGS, String.valueOf(Global.DEFAULT_SERVER_PORT)));
@@ -82,7 +79,8 @@ public class Client {
             mSessionId = connect(usr, psw);
             break;
           case Global.DISC:
-
+            disconnect(mSessionId);
+            break;
           default:
             println("Invalid statements!");
             break;
@@ -127,7 +125,17 @@ public class Client {
   }
   // mock disconnect
   private static void disconnect(long SessionId){
-
+    DisconnetReq req = new DisconnetReq(SessionId);
+    try{
+      DisconnetResp resp = client.disconnect(req);
+      if(resp.status.code == Global.SUCCESS_CODE){
+        println("Disconnect finished!");
+      }else{
+        println("Disconnect failure.");
+      }
+    }catch (TException e){
+      logger.error(e.getMessage());
+    }
   }
   static Options createOptions() {
     Options options = new Options();
