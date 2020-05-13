@@ -81,7 +81,7 @@ public class schemaTest {
     @Test
     public void testDrop() throws Exception {
         Database DB = this.manager.getCurrentDB();
-        DB.drop("table2");
+        DB.dropTable("table2");
         manager.quit();
     }
 
@@ -99,6 +99,13 @@ public class schemaTest {
         DB.getTable("table1").update(entry, row);
         ans = DB.getTable("table1").getRow(entry);
         System.out.println(ans.getEntries());
+        manager.quit();
+    }
+
+    @Test
+    public void testDeleteDatabase() throws IOException {
+        // this.manager.switchDatabase("database1");
+        this.manager.deleteDatabase("database1");
         manager.quit();
     }
 }

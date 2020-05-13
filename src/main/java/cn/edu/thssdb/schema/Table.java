@@ -4,6 +4,7 @@ import cn.edu.thssdb.exception.DuplicateKeyException;
 import cn.edu.thssdb.index.BPlusTree;
 import cn.edu.thssdb.utils.NDException;
 import javafx.util.Pair;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -172,9 +173,9 @@ public class Table implements Iterable<Row>, Serializable {
   }
 
   public void drop() {
+    System.out.println("drop table: " + this.tableName);
     // 删除文件
     File file = new File(this.tableDir);
-    file.delete();
     File[] files = file.listFiles();
     for (int i=0;i<files.length;i++) {
       files[i].delete();

@@ -44,7 +44,7 @@ public class Database {
     }
   }
 
-  public void drop(String name) {
+  public void dropTable(String name) {
     // 删除表
     if (tables.containsKey(name)) {
       tables.get(name).drop();
@@ -112,6 +112,18 @@ public class Database {
       e.printStackTrace();
     }
 
+  }
+
+  public void drop() {
+    for (String key : tables.keySet()) {
+      Table table = tables.get(key);
+      table.drop();
+    }
+    tables.clear();
+    File file = new File(this.DBdir + "/" + this.name + ".meta");
+    file.delete();
+    file = new File(this.DBdir);
+    file.delete();
   }
 
   public void quit() {
