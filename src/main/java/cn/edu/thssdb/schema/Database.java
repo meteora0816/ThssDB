@@ -128,6 +128,9 @@ public class Database {
 
   public void quit() {
     // 退出数据库
+    for (String key : this.tables.keySet()) {
+      this.tables.get(key).persist();
+    }
     this.persist();
   }
 }

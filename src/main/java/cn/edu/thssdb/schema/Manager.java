@@ -70,6 +70,9 @@ public class Manager {
     }
 
     public void quit() {
+        for (String key : this.databases.keySet()) {
+            this.databases.get(key).quit();
+        }
         // 存储元数据（有哪些数据库）
     /* DB.meta:
        Database Num|Database1|Database2|... */
@@ -89,7 +92,23 @@ public class Manager {
     }
 
     private void recover() {
-
+        System.out.println("Recover all databases...");
+        try {
+            File file = new File(this.baseDir + "/" + this.metaFile);
+            FileReader reader = new FileReader(file);
+            char[] buf = new char[1024];
+            reader.read(buf);
+            String[] vals = String.valueOf(buf).split("\\|");
+            System.out.println(vals[0] + " databases(s)");
+            int databaseNum = Integer.parseInt(vals[0]);
+            for (int i=0;i<databaseNum;i++) {
+                String databaseName = vals[i+1];
+                Database database = new Database(this.baseDir, databaseName);
+                databases.put(databaseName, database);
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static class ManagerHolder {

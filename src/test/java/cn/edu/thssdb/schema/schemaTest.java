@@ -1,6 +1,7 @@
 package cn.edu.thssdb.schema;
 
 import cn.edu.thssdb.type.ColumnType;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,20 +9,35 @@ import java.io.IOException;
 
 public class schemaTest {
     private Manager manager;
-    private String databaseName;
+    private String database1 = "database1";
+    private String database2 = "database2";
 
     @Before
     public void setUp() throws Exception {
         this.manager = Manager.getInstance();
-        this.databaseName = "database1";
-        this.manager.switchDatabase(this.databaseName);
+    }
 
+    @Test
+    public void testCreateTable() throws Exception {
+        this.manager.switchDatabase(this.database1);
         Database DB = this.manager.getCurrentDB();
+
         Column[] columns = new Column[3];
         columns[0] = new Column("name", ColumnType.STRING, 0, false, 10);
         columns[1] = new Column("ID", ColumnType.INT, 0, false, 10);
         columns[2] = new Column("department", ColumnType.STRING, 0, false, 10);
         DB.create("table1", columns);
+
+        columns[0] = new Column("name", ColumnType.STRING, 0, false, 10);
+        columns[1] = new Column("Salary", ColumnType.INT, 0, false, 10);
+        columns[2] = new Column("department", ColumnType.STRING, 0, false, 10);
+        DB.create("table2", columns);
+    }
+
+    @Test
+    public void testTableInsert() throws Exception {
+        this.manager.switchDatabase(this.database1);
+        Database DB = this.manager.getCurrentDB();
 
         Entry[] Entries = new Entry[3];
         Entries[0] = new Entry("meteora");
@@ -36,76 +52,53 @@ public class schemaTest {
         row= new Row(Entries);
         DB.getTable("table1").insert(row);
 
-        columns[0] = new Column("name", ColumnType.STRING, 0, false, 10);
-        columns[1] = new Column("Salary", ColumnType.INT, 0, false, 10);
-        columns[2] = new Column("department", ColumnType.STRING, 0, false, 10);
-        DB.create("table2", columns);
-
         Entries[0] = new Entry("lixingyao");
         Entries[1] = new Entry("2000000");
         Entries[2] = new Entry("CS");
         row= new Row(Entries);
         DB.getTable("table2").insert(row);
-
     }
-    /*
+
     @Test
-    public void testInsert() throws Exception {
+    public void testRemoveRow() throws Exception {
+        this.manager.switchDatabase(this.database1);
         Database DB = this.manager.getCurrentDB();
 
-        Row ans = DB.getTable("table1").index.get(new Entry("lxy"));
-        System.out.println(ans.entries);
-    }*/
-
-    /*
-    @Test
-    public void testRemove() throws Exception {
-        Database DB = this.manager.getCurrentDB();
         Entry entry = new Entry("lxy");
-        Table table = DB.getTable("table1");
-
-        table.delete(entry);
-
-        Row ans = DB.getTable("table1").getRow(new Entry("lxy"));
-        System.out.println(ans);
-    }*/
-
-    @Test
-    public void testRecover() throws Exception {
-        Database DB = this.manager.getCurrentDB();
-        System.out.println(DB.getTable("table1").index.get(new Entry("lxy")));
-        System.out.println(DB.getTable("table2").index.get(new Entry("lixingyao")));
-        manager.quit();
+        DB.getTable("table1").delete(entry);
     }
 
     @Test
-    public void testDrop() throws Exception {
+    public void testDropTable() throws Exception {
+        this.manager.switchDatabase(this.database1);
         Database DB = this.manager.getCurrentDB();
+
         DB.dropTable("table2");
-        manager.quit();
     }
 
     @Test
-    public void testUpdate() {
+    public void testUpdate() throws IOException {
+        this.manager.switchDatabase(this.database1);
         Database DB = this.manager.getCurrentDB();
-        Entry entry = new Entry("lxy");
-        Row ans = DB.getTable("table1").getRow(entry);
-        System.out.println(ans.getEntries());
+
+        Entry primaryKey = new Entry("lxy");
+
         Entry[] Entries = new Entry[3];
-        Entries[0] = new Entry("lxy");
+        Entries[0] = primaryKey;
         Entries[1] = new Entry("2017000002");
         Entries[2] = new Entry("SS");
         Row row = new Row(Entries);
-        DB.getTable("table1").update(entry, row);
-        ans = DB.getTable("table1").getRow(entry);
-        System.out.println(ans.getEntries());
-        manager.quit();
+
+        DB.getTable("table1").update(primaryKey, row);
     }
 
     @Test
-    public void testDeleteDatabase() throws IOException {
-        // this.manager.switchDatabase("database1");
-        this.manager.deleteDatabase("database1");
+    public void testDeleteDatabase() {
+        this.manager.deleteDatabase(this.database1);
+    }
+
+    @After
+    public void quit() {
         manager.quit();
     }
 }

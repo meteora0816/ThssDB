@@ -115,7 +115,7 @@ public class Table implements Iterable<Row>, Serializable {
   }
 
   public void delete(Entry entry) {
-    System.out.println(entry);
+    System.out.println("delete key \"" + entry + "\" in " + this.tableName);
     this.index.remove(entry);
   }
 
