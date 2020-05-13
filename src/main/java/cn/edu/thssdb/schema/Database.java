@@ -73,6 +73,7 @@ public class Database {
       FileReader reader = new FileReader(DBmeta);
       char[] buf = new char[1024];
       reader.read(buf);
+      reader.close();
       String[] vals = String.valueOf(buf).split("\\|");
       System.out.println(vals[0] + " table(s)");
       int tableNum = Integer.parseInt(vals[0]);
@@ -119,11 +120,11 @@ public class Database {
       Table table = tables.get(key);
       table.drop();
     }
-    tables.clear();
-    File file = new File(this.DBdir + "/" + this.name + ".meta");
-    file.delete();
-    file = new File(this.DBdir);
-    file.delete();
+    this.tables.clear();
+    File metaFile = new File(this.DBdir + "/" + this.name + ".meta");
+    metaFile.delete();
+    File dir = new File(this.DBdir);
+    dir.delete();
   }
 
   public void quit() {

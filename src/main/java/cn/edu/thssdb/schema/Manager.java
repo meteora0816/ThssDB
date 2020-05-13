@@ -98,6 +98,7 @@ public class Manager {
             FileReader reader = new FileReader(file);
             char[] buf = new char[1024];
             reader.read(buf);
+            reader.close();
             String[] vals = String.valueOf(buf).split("\\|");
             System.out.println(vals[0] + " databases(s)");
             int databaseNum = Integer.parseInt(vals[0]);
