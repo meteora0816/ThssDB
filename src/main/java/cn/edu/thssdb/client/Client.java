@@ -75,6 +75,9 @@ public class Client {
           case Global.RSTR:
             register();
             break;
+          case Global.WDRW:
+            withdraw();
+            break;
           case Global.CONN:
             println("Please enter your username:");
             print(Global.CLI_PREFIX);
@@ -189,7 +192,7 @@ public class Client {
     try{
       ExecuteStatementResp resp = client.executeStatement(req);
       if(resp.status.code == Global.SUCCESS_CODE){
-        println("Execution succeeded.");
+        println("Execution Succeeded.");
       }
       else{
         println("Execution Failed.");
@@ -199,6 +202,10 @@ public class Client {
     }catch (TException e){
       logger.error(e.getMessage());
     }
+  }
+
+  public static void withdraw(){
+
   }
 
   static Options createOptions() {
