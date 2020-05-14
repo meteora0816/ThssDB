@@ -16,6 +16,10 @@ class MetaInfo {
 
   int columnFind(String name) {
     // TODO
-    return 0;
+    for(int i=0;i<columns.size();i++){
+      if(name.equals(columns.get(i).name()))
+        return i;
+    }
+    return -1;
   }
 }
