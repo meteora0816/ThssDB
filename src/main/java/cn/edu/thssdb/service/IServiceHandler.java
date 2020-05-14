@@ -68,7 +68,7 @@ public class IServiceHandler implements IService.Iface {
     ConnectResp resp = new ConnectResp();
     // 需要实现用户信息管理，看用户名与密码是否匹配
     String usr = req.username;
-    String pwd = toMD5(req.username);
+    String pwd = toMD5(req.password);
     getUserInfo(); //load the file
     if(users.contains(usr)){
       int index = users.indexOf(usr);
