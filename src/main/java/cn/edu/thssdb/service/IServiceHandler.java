@@ -4,9 +4,30 @@ import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.utils.Global;
 import org.apache.thrift.TException;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class IServiceHandler implements IService.Iface {
+
+  static final String USER_INFO = "users.meta";
+  ArrayList<String> users = new ArrayList<>();
+  ArrayList<String> pwds = new ArrayList<>();
+  ArrayList<Long> sessionIds = new ArrayList<>();
+
+  private static final String toMD5(String pwd){
+    String ret = "";
+    try{
+      MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+      messageDigest.update(pwd.getBytes());
+      byte[] bytes = messageDigest.digest();
+      ret = new BigInteger(1,bytes).toString(16);
+    }catch (Exception e){
+      e.printStackTrace();
+    }
+    return ret;
+  }
 
   @Override
   public GetTimeResp getTime(GetTimeReq req) throws TException {
