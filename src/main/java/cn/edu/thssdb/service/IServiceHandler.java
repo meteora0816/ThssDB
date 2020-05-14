@@ -112,12 +112,19 @@ public class IServiceHandler implements IService.Iface {
   public ExecuteStatementResp executeStatement(ExecuteStatementReq req) throws RPCException, TException {
     // TODO
     //需要根据具体数据库操作实现。
-    return null;
+    ExecuteStatementResp resp = new ExecuteStatementResp();
+    long sessionId = req.sessionId;
+    if(sessionIds.contains(sessionId)){
+      resp.setStatus(new Status(Global.SUCCESS_CODE));
+    }
+    else{
+      resp.setStatus(new Status(Global.FAILURE_CODE));
+    }
+    return resp;
   }
 
   @Override
   public RegisterResp registNew(RegisterReq req) throws RPCException, TException{
-    // TODO
     RegisterResp resp = new RegisterResp();
     String usr = req.username;
     String pwd = toMD5(req.password);

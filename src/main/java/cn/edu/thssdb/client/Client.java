@@ -87,6 +87,9 @@ public class Client {
           case Global.DISC:
             disconnect(sessionId);
             break;
+          case Global.EXEC:
+            execute();
+            break;
           default:
             println("Invalid statements!");
             break;
@@ -178,6 +181,26 @@ public class Client {
       }
     }
   }
+
+  public static void execute(){
+    println("Please enter executable expression:");
+    String expression = SCANNER.nextLine();
+    ExecuteStatementReq req = new ExecuteStatementReq(sessionId, expression);
+    try{
+      ExecuteStatementResp resp = client.executeStatement(req);
+      if(resp.status.code == Global.SUCCESS_CODE){
+        println("Execution succeeded.");
+      }
+      else{
+        println("Execution Failed.");
+      }
+    }catch (RPCException e){
+      println(e.getMsg());
+    }catch (TException e){
+      logger.error(e.getMessage());
+    }
+  }
+
   static Options createOptions() {
     Options options = new Options();
     options.addOption(Option.builder(HELP_ARGS)
