@@ -130,7 +130,7 @@ public class Client {
         println("Register failed.");
       }
     }catch (RPCException e){
-      println(e.getMessage());
+      println(e.getMsg());
     }catch (TException e){
       logger.error(e.getMessage());
     }
@@ -150,7 +150,7 @@ public class Client {
           println("Connection Failed.");
         }
       } catch (RPCException e) {
-        println(e.getMessage());
+        println(e.getMsg());
       } catch (TException e) {
         logger.error(e.getMessage());
       }
