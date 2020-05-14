@@ -94,15 +94,16 @@ public class IServiceHandler implements IService.Iface {
 
   @Override
   public DisconnetResp disconnect(DisconnetReq req) throws RPCException,TException {
-    // TODO
     DisconnetResp resp = new DisconnetResp();
-    // mock 大致要检查传入的sessionId, 然后把它从池中移除
-    if(req.sessionId!=1919810){
-      resp.setStatus(new Status(Global.FAILURE_CODE));
+    // 大致要检查传入的sessionId, 然后把它从池中移除
+    long sessionId = req.sessionId;
+    if(sessionIds.contains(sessionId)){
+      sessionIds.remove(sessionId);
+      resp.setStatus(new Status(Global.SUCCESS_CODE));
     }
     else{
-      // 可能要从池中移除session
-      resp.setStatus(new Status(Global.SUCCESS_CODE));
+      resp.setStatus(new Status(Global.FAILURE_CODE));
+      throw new RPCException("Disconnect failed.");
     }
     return resp;
   }

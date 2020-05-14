@@ -158,18 +158,24 @@ public class Client {
       println("You have already logged in.");
     }
   }
-  // mock disconnect
+  // real disconnect
   private static void disconnect(long SessionId){
     DisconnetReq req = new DisconnetReq(SessionId);
-    try{
-      DisconnetResp resp = client.disconnect(req);
-      if(resp.status.code == Global.SUCCESS_CODE){
-        println("Disconnect finished!");
-      }else{
-        println("Disconnect failure.");
+    if(sessionId == -1){
+      println("You have not logged in yet.");
+    }
+    else{
+      try{
+        DisconnetResp resp = client.disconnect(req);
+        if(resp.status.code == Global.SUCCESS_CODE){
+          println("Disconnection Succeeded.");
+          sessionId = -1;
+        }
+      }catch (RPCException e){
+        println(e.getMsg());
+      }catch (TException e){
+        logger.error(e.getMessage());
       }
-    }catch (TException e){
-      logger.error(e.getMessage());
     }
   }
   static Options createOptions() {
