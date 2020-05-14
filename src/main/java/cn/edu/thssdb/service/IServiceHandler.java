@@ -2,8 +2,10 @@ package cn.edu.thssdb.service;
 
 import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.utils.Global;
+import jdk.jfr.events.FileReadEvent;
 import org.apache.thrift.TException;
 
+import java.io.*;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -11,7 +13,7 @@ import java.util.Date;
 
 public class IServiceHandler implements IService.Iface {
 
-  static final String USER_INFO = "users.meta";
+  static final String USER_INFO = "users.info";
   ArrayList<String> users = new ArrayList<>();
   ArrayList<String> pwds = new ArrayList<>();
   ArrayList<Long> sessionIds = new ArrayList<>();
@@ -27,6 +29,30 @@ public class IServiceHandler implements IService.Iface {
       e.printStackTrace();
     }
     return ret;
+  }
+  private void getUserInfo(){
+    if(users.isEmpty()){
+      File file = new File(USER_INFO);
+      try{
+        if(file.isFile()&&file.exists()){
+          FileReader fileReader = new FileReader(USER_INFO);
+          BufferedReader bufferedReader = new BufferedReader(fileReader);
+          String str;
+          while((str = bufferedReader.readLine())!=null){
+            String[] userPwds = str.split(" ");
+            users.add(userPwds[0]);
+            pwds.add(userPwds[1]);
+          }
+          bufferedReader.close();
+          fileReader.close();
+        }
+        else{
+          file.createNewFile();
+        }
+      }catch (IOException e){
+        e.printStackTrace();
+      }
+    }
   }
 
   @Override
