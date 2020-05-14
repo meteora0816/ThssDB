@@ -41,6 +41,10 @@ public class Client {
   private static IService.Client client;
   private static CommandLine commandLine;
 
+  //session id
+  //record the status of connection
+  private static long sessionId = -1;
+
 
   public static void main(String[] args) {
     commandLine = parseCmd(args);
@@ -49,7 +53,6 @@ public class Client {
       return;
     }
     try {
-      long mSessionId = -1;
       echoStarting();
       String host = commandLine.getOptionValue(HOST_ARGS, Global.DEFAULT_SERVER_HOST);
       int port = Integer.parseInt(commandLine.getOptionValue(PORT_ARGS, String.valueOf(Global.DEFAULT_SERVER_PORT)));
@@ -76,10 +79,10 @@ public class Client {
             println("Please enter your password:");
             print(Global.CLI_PREFIX);
             String psw = SCANNER.nextLine().trim();
-            mSessionId = connect(usr, psw);
+            connect(usr, psw);
             break;
           case Global.DISC:
-            disconnect(mSessionId);
+            disconnect(sessionId);
             break;
           default:
             println("Invalid statements!");
@@ -106,22 +109,26 @@ public class Client {
     }
   }
   // mock connect
-  private static long connect(String username, String password){
+  private static void connect(String username, String password){
+    println("Connecting to database...");
     ConnectReq req = new ConnectReq(username, password);
-    try{
-      ConnectResp resp = client.connect(req);
-      if(resp.status.code == Global.SUCCESS_CODE){
-        println(resp.getSessionId()+"");
-        return resp.getSessionId();
+    if(sessionId == -1) {
+      try {
+        ConnectResp resp = client.connect(req);
+        if (resp.status.code == Global.SUCCESS_CODE) {
+          println("Session id: " + resp.getSessionId() + "");
+          sessionId = resp.getSessionId();
+        } else {
+          println("Connection Failed.");
+        }
+      } catch (RPCException e) {
+        println(e.getMessage());
+      } catch (TException e) {
+        logger.error(e.getMessage());
       }
-      else{
-        println(resp.status.msg);
-        return -1;
-      }
-    }catch (TException e){
-      logger.error(e.getMessage());
+    }else{
+      println("You have already logged in.");
     }
-    return -1;
   }
   // mock disconnect
   private static void disconnect(long SessionId){

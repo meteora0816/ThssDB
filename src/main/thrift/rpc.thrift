@@ -45,9 +45,13 @@ struct ExecuteStatementResp{
   5: optional list<list<string>> rowList
 }
 
+exception RPCException{
+  1: required string msg;
+}
+
 service IService {
   GetTimeResp getTime(1: GetTimeReq req);
-  ConnectResp connect(1: ConnectReq req);
+  ConnectResp connect(1: ConnectReq req)throws(1:RPCException e);
   // DisconnetResp disconnect(1: DisconnetResp req);
   DisconnetResp disconnect(1:DisconnetReq req);
   ExecuteStatementResp executeStatement(1: ExecuteStatementReq req);

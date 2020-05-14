@@ -2,7 +2,6 @@ package cn.edu.thssdb.service;
 
 import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.utils.Global;
-import jdk.jfr.events.FileReadEvent;
 import org.apache.thrift.TException;
 
 import java.io.*;
@@ -17,6 +16,7 @@ public class IServiceHandler implements IService.Iface {
   ArrayList<String> users = new ArrayList<>();
   ArrayList<String> pwds = new ArrayList<>();
   ArrayList<Long> sessionIds = new ArrayList<>();
+  public long sessionCnt = 0;
 
   private static final String toMD5(String pwd){
     String ret = "";
@@ -64,18 +64,32 @@ public class IServiceHandler implements IService.Iface {
   }
 
   @Override
-  public ConnectResp connect(ConnectReq req) throws TException {
+  public ConnectResp connect(ConnectReq req) throws RPCException,TException {
     // TODO
     ConnectResp resp = new ConnectResp();
     // 需要实现用户信息管理，看用户名与密码是否匹配
     // mock
-    if(req.username.equals("animal")&&req.password.equals("114514")){
-      resp.setSessionId(1919810);
-      resp.setStatus(new Status(Global.SUCCESS_CODE));
-    }else{
-      Status status = new Status(Global.FAILURE_CODE);
-      status.setMsg("BOOM!");
-      resp.setStatus(status);
+    String usr = req.username;
+    String pwd = toMD5(req.username);
+    getUserInfo(); //load the file
+    if(users.contains(usr)){
+      int index = users.indexOf(usr);
+      if(pwds.get(index).equals(pwd)){
+        resp.setStatus(new Status(Global.SUCCESS_CODE));
+        sessionIds.add(sessionCnt);  //add session to pool
+        resp.setSessionId(sessionCnt);
+        sessionCnt++;
+      }
+      else{
+        resp.setStatus(new Status(Global.FAILURE_CODE));
+        resp.setSessionId(-1);
+        throw new RPCException("Invalid Password.");
+      }
+    }
+    else{
+      resp.setStatus(new Status(Global.FAILURE_CODE));
+      resp.setSessionId(-1);
+      throw new RPCException("Invalid Username.");
     }
     return resp;
   }
