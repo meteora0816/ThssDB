@@ -72,6 +72,9 @@ public class Client {
           case Global.QUIT:
             open = false;
             break;
+          case Global.RSTR:
+            register();
+            break;
           case Global.CONN:
             println("Please enter your username:");
             print(Global.CLI_PREFIX);
@@ -108,7 +111,32 @@ public class Client {
       logger.error(e.getMessage());
     }
   }
-  // mock connect
+
+  private static void register(){
+    println("Begin to register.");
+    String usr;
+    String pwd;
+    println("Please enter your username:");
+    usr = SCANNER.nextLine();
+    println("Please enter your password:");
+    pwd = SCANNER.nextLine();
+    RegisterReq req = new RegisterReq(usr,pwd);
+    try{
+      RegisterResp resp = client.registNew(req);
+      if(resp.status.code == Global.SUCCESS_CODE){
+        println("Register success.");
+      }
+      else{
+        println("Register failed.");
+      }
+    }catch (RPCException e){
+      println(e.getMessage());
+    }catch (TException e){
+      logger.error(e.getMessage());
+    }
+  }
+
+  // real connect
   private static void connect(String username, String password){
     println("Connecting to database...");
     ConnectReq req = new ConnectReq(username, password);

@@ -65,10 +65,8 @@ public class IServiceHandler implements IService.Iface {
 
   @Override
   public ConnectResp connect(ConnectReq req) throws RPCException,TException {
-    // TODO
     ConnectResp resp = new ConnectResp();
     // 需要实现用户信息管理，看用户名与密码是否匹配
-    // mock
     String usr = req.username;
     String pwd = toMD5(req.username);
     getUserInfo(); //load the file
@@ -119,7 +117,27 @@ public class IServiceHandler implements IService.Iface {
   @Override
   public RegisterResp registNew(RegisterReq req) throws RPCException, TException{
     // TODO
-    return null;
+    RegisterResp resp = new RegisterResp();
+    String usr = req.username;
+    String pwd = toMD5(req.password);
+    getUserInfo();
+    if(users.contains(usr)){
+      throw new RPCException("Duplicated username.");
+    }
+    else{
+      try{
+        FileWriter fileWriter = new FileWriter(USER_INFO, true);
+        fileWriter.write(usr+' '+pwd+"\r\n");
+        fileWriter.flush();
+        fileWriter.close();
+        users.add(usr);
+        pwds.add(pwd);
+        resp.setStatus(new Status(Global.SUCCESS_CODE));
+      }catch (IOException e){
+        throw new RPCException("Failed to write into file.");
+      }
+    }
+    return resp;
   }
 
   @Override
