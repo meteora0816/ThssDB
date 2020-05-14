@@ -8,6 +8,24 @@ struct Status {
 struct GetTimeReq {
 }
 
+struct RegisterReq{
+  1: required string username
+  2: required string password
+}
+
+struct RegisterResp{
+  1: required Status status;
+}
+
+struct WithdrawReq{
+  1: required string username
+  2: required string password
+}
+
+struct WithdrawResp{
+  1: required Status status
+}
+
 struct ConnectReq{
   1: required string username
   2: required string password
@@ -51,8 +69,10 @@ exception RPCException{
 
 service IService {
   GetTimeResp getTime(1: GetTimeReq req);
+  RegisterResp registNew(1: RegisterReq req)throws(1:RPCException e);
+  WithdrawResp withdraw(1: WithdrawReq req)throws(1:RPCException e);
   ConnectResp connect(1: ConnectReq req)throws(1:RPCException e);
   // DisconnetResp disconnect(1: DisconnetResp req);
-  DisconnetResp disconnect(1:DisconnetReq req);
-  ExecuteStatementResp executeStatement(1: ExecuteStatementReq req);
+  DisconnetResp disconnect(1:DisconnetReq req)throws(1:RPCException e);
+  ExecuteStatementResp executeStatement(1: ExecuteStatementReq req)throws(1:RPCException e);
 }

@@ -95,7 +95,7 @@ public class IServiceHandler implements IService.Iface {
   }
 
   @Override
-  public DisconnetResp disconnect(DisconnetReq req) throws TException {
+  public DisconnetResp disconnect(DisconnetReq req) throws RPCException,TException {
     // TODO
     DisconnetResp resp = new DisconnetResp();
     // mock 大致要检查传入的sessionId, 然后把它从池中移除
@@ -110,9 +110,21 @@ public class IServiceHandler implements IService.Iface {
   }
 
   @Override
-  public ExecuteStatementResp executeStatement(ExecuteStatementReq req) throws TException {
+  public ExecuteStatementResp executeStatement(ExecuteStatementReq req) throws RPCException, TException {
     // TODO
     //需要根据具体数据库操作实现。
+    return null;
+  }
+
+  @Override
+  public RegisterResp registNew(RegisterReq req) throws RPCException, TException{
+    // TODO
+    return null;
+  }
+
+  @Override
+  public WithdrawResp withdraw(WithdrawReq rep) throws RPCException, TException{
+    // TODO
     return null;
   }
 }
