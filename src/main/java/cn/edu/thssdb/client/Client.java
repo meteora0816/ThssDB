@@ -197,6 +197,7 @@ public class Client {
       }
       else{
         println("Execution Failed.");
+        println(resp.status.msg);
       }
     }catch (RPCException e){
       println(e.getMsg());

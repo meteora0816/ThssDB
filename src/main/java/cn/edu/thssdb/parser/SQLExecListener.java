@@ -11,15 +11,21 @@ import java.io.IOException;
 public class SQLExecListener extends SQLBaseListener {
     private Manager manager;
     private ExecuteStatementResp resp;
+
+    @Override
+    public void enterParse(SQLParser.ParseContext ctx){
+        try {
+            manager = new Manager();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
     @Override
     public void exitCreate_db_stmt(SQLParser.Create_db_stmtContext ctx) {
         resp = new ExecuteStatementResp();
         String dbName = ctx.database_name().getText();
         //System.out.println("dbname: "+dbName);
         try{
-            if(manager == null) {
-                manager = new Manager();
-            }
             if(manager.containDatabase(dbName)){
                 Status status = new Status(Global.FAILURE_CODE);
                 status.setMsg("Duplicated database name.");
@@ -27,7 +33,7 @@ public class SQLExecListener extends SQLBaseListener {
             }
             else {
                 manager.switchDatabase(dbName);
-                manager.quit();
+                //manager.quit();
                 Status status = new Status(Global.SUCCESS_CODE);
                 status.setMsg("Database created successfully.");
                 resp.setStatus(status);
@@ -38,6 +44,11 @@ public class SQLExecListener extends SQLBaseListener {
             //System.out.println("Failed to create database");
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void exitParse(SQLParser.ParseContext ctx) {
+        manager.quit();
     }
 
 
