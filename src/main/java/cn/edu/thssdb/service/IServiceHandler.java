@@ -2,8 +2,14 @@ package cn.edu.thssdb.service;
 
 import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.utils.Global;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+import cn.edu.thssdb.parser.*;
 import org.apache.thrift.TException;
+import org.antlr.v4.runtime.CodePointCharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
 
 import java.io.*;
 import java.math.BigInteger;
@@ -112,14 +118,32 @@ public class IServiceHandler implements IService.Iface {
   @Override
   public ExecuteStatementResp executeStatement(ExecuteStatementReq req) throws RPCException, TException {
     // TODO
-    //需要根据具体数据库操作实现。
+    //需要根据具体数据库操作实现。正在实现：创建数据库
     ExecuteStatementResp resp = new ExecuteStatementResp();
     long sessionId = req.sessionId;
     if(sessionIds.contains(sessionId)){
-      resp.setStatus(new Status(Global.SUCCESS_CODE));
+      System.out.println("parse begins");
+      String statement = req.statement;
+      //System.out.println(statement);
+
+      CodePointCharStream charStream = CharStreams.fromString(statement);
+      //System.out.println(charStream.toString());
+
+      SQLLexer lexer = new SQLLexer(charStream);
+      CommonTokenStream tokens = new CommonTokenStream(lexer);
+      SQLParser parser = new SQLParser(tokens);
+      ParseTree tree = parser.parse();
+      System.out.println(tree.toStringTree(parser));
+      ParseTreeWalker walker = new ParseTreeWalker();
+      SQLExecListener listener = new SQLExecListener();
+
+      walker.walk(listener,tree);
+      resp = listener.getResult();
     }
     else{
-      resp.setStatus(new Status(Global.FAILURE_CODE));
+      Status status = new Status(Global.FAILURE_CODE);
+      status.setMsg("Please log in first.");
+      resp.setStatus(status);
     }
     return resp;
   }

@@ -193,6 +193,7 @@ public class Client {
       ExecuteStatementResp resp = client.executeStatement(req);
       if(resp.status.code == Global.SUCCESS_CODE){
         println("Execution Succeeded.");
+        println(resp.status.msg);
       }
       else{
         println("Execution Failed.");

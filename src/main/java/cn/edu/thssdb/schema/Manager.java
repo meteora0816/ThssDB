@@ -38,6 +38,10 @@ public class Manager {
         return newDB;
     }
 
+    public boolean containDatabase(String dbName){
+        return databases.containsKey(dbName);
+    }
+
     public void deleteDatabase(String name) {
         System.out.println("delete database: " + name);
         // 删除数据库
