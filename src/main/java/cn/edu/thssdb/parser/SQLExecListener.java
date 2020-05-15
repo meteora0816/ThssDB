@@ -14,8 +14,8 @@ public class SQLExecListener extends SQLBaseListener {
     @Override
     public void exitCreate_db_stmt(SQLParser.Create_db_stmtContext ctx) {
         resp = new ExecuteStatementResp();
-        String dbName = ctx.database_name().toString();
-        System.out.println("dbname: "+dbName);
+        String dbName = ctx.database_name().getText();
+        //System.out.println("dbname: "+dbName);
         try{
             if(manager == null) {
                 manager = new Manager();
@@ -27,6 +27,7 @@ public class SQLExecListener extends SQLBaseListener {
             }
             else {
                 manager.switchDatabase(dbName);
+                manager.quit();
                 Status status = new Status(Global.SUCCESS_CODE);
                 status.setMsg("Database created successfully.");
                 resp.setStatus(status);

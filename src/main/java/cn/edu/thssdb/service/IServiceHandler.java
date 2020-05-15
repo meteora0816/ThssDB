@@ -133,7 +133,7 @@ public class IServiceHandler implements IService.Iface {
       CommonTokenStream tokens = new CommonTokenStream(lexer);
       SQLParser parser = new SQLParser(tokens);
       ParseTree tree = parser.parse();
-      System.out.println(tree.toStringTree(parser));
+      //System.out.println(tree.toStringTree(parser));
       ParseTreeWalker walker = new ParseTreeWalker();
       SQLExecListener listener = new SQLExecListener();
 
