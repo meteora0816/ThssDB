@@ -2,6 +2,7 @@ package cn.edu.thssdb.service;
 
 import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.utils.Global;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.apache.thrift.TException;
 
 import java.io.*;
@@ -149,8 +150,39 @@ public class IServiceHandler implements IService.Iface {
   }
 
   @Override
-  public WithdrawResp withdraw(WithdrawReq rep) throws RPCException, TException{
+  public WithdrawResp withdraw(WithdrawReq req) throws RPCException, TException{
     // TODO
-    return null;
+    WithdrawResp resp = new WithdrawResp();
+    String usr = req.username;
+    String pwd = toMD5(req.password);
+    getUserInfo();
+    if(users.contains(usr)){
+      int index = users.indexOf(usr);
+      if(pwds.get(index).equals(pwd)){
+        users.remove(index);
+        pwds.remove(index);
+        resp.setStatus(new Status(Global.SUCCESS_CODE));
+        try{
+          FileWriter withdrawWriter = new FileWriter(USER_INFO);
+          int len = users.size();
+          for(int i=0;i<len;++i){
+            withdrawWriter.write(users.get(i)+' '+pwds.get(i)+"\r\n");
+          }
+          withdrawWriter.close();
+        }catch (IOException e){
+          e.printStackTrace();
+          throw new RPCException("Failed to write into file.");
+        }
+      }
+      else{
+        resp.setStatus(new Status(Global.FAILURE_CODE));
+        throw new RPCException("Invalid Password.");
+      }
+    }
+    else{
+      resp.setStatus(new Status(Global.FAILURE_CODE));
+      throw new RPCException("Invalid Username.");
+    }
+    return resp;
   }
 }

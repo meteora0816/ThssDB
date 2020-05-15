@@ -205,7 +205,27 @@ public class Client {
   }
 
   public static void withdraw(){
-
+    String usr;
+    String pwd;
+    println("Begin to withdraw.");
+    println("Please enter your username:");
+    usr = SCANNER.nextLine();
+    println("Please enter your password:");
+    pwd = SCANNER.nextLine();
+    WithdrawReq req = new WithdrawReq(usr,pwd);
+    try{
+      WithdrawResp resp = client.withdraw(req);
+      if(resp.status.code == Global.SUCCESS_CODE){
+        println("Withdraw succeeded.");
+      }
+      else{
+        println("Withdraw failed.");
+      }
+    }catch (RPCException e){
+      println(e.getMsg());
+    }catch (TException e){
+      logger.error(e.getMessage());
+    }
   }
 
   static Options createOptions() {
