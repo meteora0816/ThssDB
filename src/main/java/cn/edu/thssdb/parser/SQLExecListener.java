@@ -31,7 +31,7 @@ public class SQLExecListener extends SQLBaseListener {
         try{
             if(manager.containDatabase(dbName)){
                 //Status status = new Status(Global.FAILURE_CODE);
-                success = success&&false;
+                success = false;
                 status.setMsg(status.msg+"Duplicated database name.\n");
                 //resp.setStatus(status);
             }
@@ -39,13 +39,13 @@ public class SQLExecListener extends SQLBaseListener {
                 manager.switchDatabase(dbName);
                 //manager.quit();
                 //Status status = new Status(Global.SUCCESS_CODE);
-                success = success&&true;
+                //success = success;
                 status.setMsg(status.msg+"Database created successfully.\n");
                 //resp.setStatus(status);
             }
         }catch (IOException e){
             //Status status = new Status(Global.FAILURE_CODE);
-            success = success&&false;
+            success = false;
             status.setMsg(status.msg+"Failed to create database file.\n");
             //System.out.println("Failed to create database");
             e.printStackTrace();
@@ -54,7 +54,16 @@ public class SQLExecListener extends SQLBaseListener {
 
     @Override
     public void exitDrop_db_stmt(SQLParser.Drop_db_stmtContext ctx) {
-
+        String dbName = ctx.database_name().getText();
+        if(manager.containDatabase(dbName)){
+            manager.deleteDatabase(dbName);
+            //success = success&&true;
+            status.setMsg(status.msg+"Database deleted successfully.\n");
+        }
+        else{
+            success = false;
+            status.setMsg(status.msg+"Database failed to delete.\n");
+        }
     }
 
     @Override
