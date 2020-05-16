@@ -93,11 +93,40 @@ public class SQLExecListener extends SQLBaseListener {
             //预处理type
             typeRaw = typeRaw.toUpperCase();
             typeRaw.replaceAll(" ","");
+            String typeLength = "32";
             if(typeRaw.charAt(0)=='S'){
-
+                typeLength = "";
+                for(int j=7;j<typeRaw.length()-1;j++){
+                    typeLength+=typeRaw.charAt(j);
+                }
+                typeRaw = "STRING";
             }
-            ColumnType columnType = ColumnType.valueOf(column_defContext.type_name().getText());
+            int maxLength = Integer.parseInt(typeLength);
+            ColumnType columnType = ColumnType.valueOf(typeRaw);
+            boolean notNull = false;
+            List<SQLParser.Column_constraintContext> column_constraintContexts = column_defContext.column_constraint();
+            if(!column_constraintContexts.isEmpty()) {
+                String columnConstraint = column_constraintContexts.get(0).getText();//只实现not null
 
+                if (columnConstraint.toUpperCase() == "NOT NULL") {
+                    notNull = true;
+                }
+            }
+            columns[i] = new Column(columnName,columnType,0,notNull,maxLength);
+        }
+        String primaryName = ctx.table_constraint().column_name(0).getText();//only one primary key
+        for(int i=0;i<numOfColumns;i++){
+            if(columns[i].name()==primaryName){
+                columns[i].setPrimary(1);
+                break;
+            }
+        }
+        try {
+            manager.getCurrentDB().create(tableName, columns);
+            status.msg+="Create table successfully.\n";
+        }catch (Exception e){
+            success = false;
+            status.msg+="Failed to create table.";
         }
     }
 
