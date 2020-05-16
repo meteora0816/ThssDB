@@ -109,18 +109,21 @@ public class SQLExecListener extends SQLBaseListener {
             List<SQLParser.Column_constraintContext> column_constraintContexts = column_defContext.column_constraint();
             if(!column_constraintContexts.isEmpty()) {
                 String columnConstraint = column_constraintContexts.get(0).getText();//只实现not null
-
-                if (columnConstraint.toUpperCase() == "NOT NULL") {
+                //System.out.println("columnConstraint: "+columnConstraint);
+                if (columnConstraint.toUpperCase().equals("NOTNULL")) {
                     notNull = true;
                 }
             }
             columns[i] = new Column(columnName,columnType,0,notNull,maxLength);
         }
         List<SQLParser.Column_nameContext> table_constraintContexts = ctx.table_constraint().column_name();
+        System.out.println(table_constraintContexts.size());
         if(!table_constraintContexts.isEmpty()) {
             String primaryName = ctx.table_constraint().column_name(0).getText();//only one primary key
+            //System.out.println(primaryName);
             for (int i = 0; i < numOfColumns; i++) {
-                if (columns[i].name() == primaryName) {
+                //System.out.println(columns[i].name());
+                if (columns[i].name().equals(primaryName)) {
                     columns[i].setPrimary(1);
                     break;
                 }
