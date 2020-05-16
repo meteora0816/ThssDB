@@ -2,6 +2,7 @@ package cn.edu.thssdb.parser;
 
 import cn.edu.thssdb.rpc.thrift.Status;
 import cn.edu.thssdb.schema.Column;
+import cn.edu.thssdb.schema.Database;
 import cn.edu.thssdb.schema.Manager;
 import cn.edu.thssdb.rpc.thrift.ExecuteStatementResp;
 import cn.edu.thssdb.schema.Table;
@@ -11,6 +12,8 @@ import com.sun.org.apache.bcel.internal.generic.GotoInstruction;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SQLExecListener extends SQLBaseListener {
@@ -117,21 +120,35 @@ public class SQLExecListener extends SQLBaseListener {
             columns[i] = new Column(columnName,columnType,0,notNull,maxLength);
         }
         List<SQLParser.Column_nameContext> table_constraintContexts = ctx.table_constraint().column_name();
-        System.out.println(table_constraintContexts.size());
+        //System.out.println(table_constraintContexts.size());
         if(!table_constraintContexts.isEmpty()) {
-            String primaryName = ctx.table_constraint().column_name(0).getText();//only one primary key
+            //String primaryName = ctx.table_constraint().column_name(0).getText();//only one primary key
             //System.out.println(primaryName);
+            List<SQLParser.Column_nameContext> column_nameContexts = ctx.table_constraint().column_name();
+            ArrayList<String> primaryNames = new ArrayList<>();
+            int numOfPrimary = column_nameContexts.size();
+            for(int k=0;k<numOfPrimary;k++){
+                primaryNames.add(column_nameContexts.get(k).getText());
+            }
+            System.out.println(Arrays.toString(primaryNames.toArray()));
             for (int i = 0; i < numOfColumns; i++) {
                 //System.out.println(columns[i].name());
-                if (columns[i].name().equals(primaryName)) {
+                if (primaryNames.contains(columns[i].name())) {
                     columns[i].setPrimary(1);
-                    break;
+                    //break;
                 }
             }
         }
         try {
-            manager.getCurrentDB().create(tableName, columns);
-            status.msg+="Create table successfully.\n";
+            Database db = manager.getCurrentDB();
+            if(db.containsTable(tableName)){
+                success = false;
+                status.msg += "Duplicated tableName.\n";
+            }
+            else {
+                db.create(tableName, columns);
+                status.msg += "Create table successfully.\n";
+            }
         }catch (Exception e){
             success = false;
             status.msg+="Failed to create table.";

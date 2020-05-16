@@ -33,6 +33,10 @@ public class Database {
     }
   }
 
+  public boolean containsTable(String tableName){
+    return tables.containsKey(tableName);
+  }
+
   public void create(String name, Column[] columns) throws Exception {
     // 新建表
     if (tables.containsKey(name)) {
