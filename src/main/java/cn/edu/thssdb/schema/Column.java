@@ -25,7 +25,8 @@ public class Column implements Comparable<Column>, Serializable {
   }
 
   public String toString() {
-    return name + ',' + type + ',' + primary + ',' + notNull + ',' + maxLength;
+    return "columnName: "+name + ',' + "type: "+type + ',' + "primary: "+primary + ','
+            + "notNull: "+notNull + ',' + "maxLength: "+maxLength+"\n";
   }
 
   public String name() {return name;}

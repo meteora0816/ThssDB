@@ -118,7 +118,9 @@ public class IServiceHandler implements IService.Iface {
   @Override
   public ExecuteStatementResp executeStatement(ExecuteStatementReq req) throws RPCException, TException {
     // TODO
-    //需要根据具体数据库操作实现。已经实现：创建数据库，删除数据库，创建表
+    /*
+    需要根据具体数据库操作实现。已经实现：创建数据库，删除数据库，创建表，删除表, 显示表信息
+     */
     ExecuteStatementResp resp = new ExecuteStatementResp();
     long sessionId = req.sessionId;
     if(sessionIds.contains(sessionId)){

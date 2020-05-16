@@ -4,6 +4,7 @@ import cn.edu.thssdb.rpc.thrift.Status;
 import cn.edu.thssdb.schema.Column;
 import cn.edu.thssdb.schema.Manager;
 import cn.edu.thssdb.rpc.thrift.ExecuteStatementResp;
+import cn.edu.thssdb.schema.Table;
 import cn.edu.thssdb.type.ColumnType;
 import cn.edu.thssdb.utils.Global;
 import com.sun.org.apache.bcel.internal.generic.GotoInstruction;
@@ -136,9 +137,21 @@ public class SQLExecListener extends SQLBaseListener {
 
     @Override
     public void exitDrop_table_stmt(SQLParser.Drop_table_stmtContext ctx) {
-        String dbName = ctx.table_name().getText();
-        manager.getCurrentDB().dropTable(dbName);
+        String tableName = ctx.table_name().getText();
+        manager.getCurrentDB().dropTable(tableName);
         status.msg+="Drop table successfully.";
+    }
+
+    @Override
+    public void exitShow_meta_stmt(SQLParser.Show_meta_stmtContext ctx) {
+        String tableName = ctx.table_name().getText();
+        status.msg+="Table: "+tableName+"\n";
+        Table table = manager.getCurrentDB().getTable(tableName);
+        List<Column> columns = table.columns;
+        int len = columns.size();
+        for(int i=0;i<len;i++){
+            status.msg+=columns.get(i).toString();
+        }
     }
 
     @Override
