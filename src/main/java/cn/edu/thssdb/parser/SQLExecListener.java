@@ -1,13 +1,11 @@
 package cn.edu.thssdb.parser;
 
 import cn.edu.thssdb.rpc.thrift.Status;
-import cn.edu.thssdb.schema.Column;
-import cn.edu.thssdb.schema.Database;
-import cn.edu.thssdb.schema.Manager;
+import cn.edu.thssdb.schema.*;
 import cn.edu.thssdb.rpc.thrift.ExecuteStatementResp;
-import cn.edu.thssdb.schema.Table;
 import cn.edu.thssdb.type.ColumnType;
 import cn.edu.thssdb.utils.Global;
+import cn.edu.thssdb.utils.NDException;
 import com.sun.org.apache.bcel.internal.generic.GotoInstruction;
 
 
@@ -162,6 +160,7 @@ public class SQLExecListener extends SQLBaseListener {
         status.msg+="Drop table successfully.";
     }
 
+    //show table
     @Override
     public void exitShow_meta_stmt(SQLParser.Show_meta_stmtContext ctx) {
         String tableName = ctx.table_name().getText();
@@ -171,6 +170,39 @@ public class SQLExecListener extends SQLBaseListener {
         int len = columns.size();
         for(int i=0;i<len;i++){
             status.msg+=columns.get(i).toString();
+        }
+    }
+
+    @Override
+    public void
+    exitInsert_stmt(SQLParser.Insert_stmtContext ctx) {
+        String tableName = ctx.table_name().getText();
+        List<SQLParser.Column_nameContext> column_nameContexts = ctx.column_name();
+        int numOfColumn = column_nameContexts.size();
+        String[] columnNames = new String[numOfColumn];
+        for(int i=0;i<numOfColumn;i++){
+            columnNames[i] = column_nameContexts.get(i).getText();
+        }
+        List<SQLParser.Value_entryContext> value_entryContexts = ctx.value_entry();
+        int numOfEntries = value_entryContexts.size();
+        Entry[] entries = new Entry[numOfEntries];
+        for(int i=0;i<numOfEntries;i++){
+            entries[i] = new Entry(value_entryContexts.get(i).getText());
+        }
+        Table currentTable = manager.getCurrentDB().getTable(tableName);
+        if(numOfColumn == 0){
+            // 默认输入，entries不调整
+
+        }
+        else{
+
+        }
+        Row insetRow = new Row(entries);
+        try {
+            currentTable.insert(insetRow);
+        }catch(NDException e){
+            success = false;
+            status.msg+="Some of your insert values cannot be null.\n";
         }
     }
 
