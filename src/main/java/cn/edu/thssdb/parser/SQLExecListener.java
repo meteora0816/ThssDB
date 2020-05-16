@@ -185,21 +185,38 @@ public class SQLExecListener extends SQLBaseListener {
         }
         List<SQLParser.Value_entryContext> value_entryContexts = ctx.value_entry();
         int numOfEntries = value_entryContexts.size();
+        Table currentTable = manager.getCurrentDB().getTable(tableName);
+
         Entry[] entries = new Entry[numOfEntries];
         for(int i=0;i<numOfEntries;i++){
             entries[i] = new Entry(value_entryContexts.get(i).getText());
         }
-        Table currentTable = manager.getCurrentDB().getTable(tableName);
+        Row insertRow;
+
         if(numOfColumn == 0){
             // 默认输入，entries不调整
-
+            insertRow = new Row(entries);
         }
         else{
-
+            int numOfRealColumns = currentTable.columns.size();
+            Entry[] realEntries = new Entry[numOfRealColumns];
+            for(int i=0;i<numOfRealColumns;i++){
+                realEntries[i] = null;
+            }
+            for(int i=0;i<numOfColumn;i++){ //check every column
+                int index;
+                for(index=0;index<numOfRealColumns;index++){
+                    if(currentTable.columns.get(index).name().equals(columnNames[i])){
+                        break;
+                    }
+                }
+                realEntries[index] = new Entry(entries[i]);
+            }
+            insertRow = new Row(realEntries);
         }
-        Row insetRow = new Row(entries);
+
         try {
-            currentTable.insert(insetRow);
+            currentTable.insert(insertRow);
         }catch(NDException e){
             success = false;
             status.msg+="Some of your insert values cannot be null.\n";
