@@ -19,6 +19,7 @@ public class SQLExecListener extends SQLBaseListener {
     public void enterParse(SQLParser.ParseContext ctx){
         try {
             manager = new Manager();
+            manager.switchDatabase("public");
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -63,6 +64,16 @@ public class SQLExecListener extends SQLBaseListener {
         else{
             success = false;
             status.setMsg(status.msg+"Database failed to delete.\n");
+        }
+    }
+
+    @Override
+    public void exitUse_db_stmt(SQLParser.Use_db_stmtContext ctx) {
+        String dbName = ctx.database_name().getText();
+        try {
+            manager.switchDatabase(dbName);
+        }catch (IOException e){
+            e.printStackTrace();
         }
     }
 
