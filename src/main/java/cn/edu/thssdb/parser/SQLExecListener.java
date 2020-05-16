@@ -114,11 +114,14 @@ public class SQLExecListener extends SQLBaseListener {
             }
             columns[i] = new Column(columnName,columnType,0,notNull,maxLength);
         }
-        String primaryName = ctx.table_constraint().column_name(0).getText();//only one primary key
-        for(int i=0;i<numOfColumns;i++){
-            if(columns[i].name()==primaryName){
-                columns[i].setPrimary(1);
-                break;
+        List<SQLParser.Column_nameContext> table_constraintContexts = ctx.table_constraint().column_name();
+        if(!table_constraintContexts.isEmpty()) {
+            String primaryName = ctx.table_constraint().column_name(0).getText();//only one primary key
+            for (int i = 0; i < numOfColumns; i++) {
+                if (columns[i].name() == primaryName) {
+                    columns[i].setPrimary(1);
+                    break;
+                }
             }
         }
         try {
