@@ -1,13 +1,16 @@
 package cn.edu.thssdb.parser;
 
 import cn.edu.thssdb.rpc.thrift.Status;
+import cn.edu.thssdb.schema.Column;
 import cn.edu.thssdb.schema.Manager;
 import cn.edu.thssdb.rpc.thrift.ExecuteStatementResp;
+import cn.edu.thssdb.type.ColumnType;
 import cn.edu.thssdb.utils.Global;
 import com.sun.org.apache.bcel.internal.generic.GotoInstruction;
 
 
 import java.io.IOException;
+import java.util.List;
 
 public class SQLExecListener extends SQLBaseListener {
     private Manager manager;
@@ -74,6 +77,27 @@ public class SQLExecListener extends SQLBaseListener {
             manager.switchDatabase(dbName);
         }catch (IOException e){
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void exitCreate_table_stmt(SQLParser.Create_table_stmtContext ctx) {
+        String tableName = ctx.table_name().getText();
+        List<SQLParser.Column_defContext> columnDefCtxs = ctx.column_def();
+        int numOfColumns = columnDefCtxs.size();
+        Column[] columns = new Column[numOfColumns];
+        for(int i=0;i<numOfColumns;i++){
+            SQLParser.Column_defContext column_defContext = columnDefCtxs.get(i);
+            String columnName = column_defContext.column_name().getText();
+            String typeRaw = column_defContext.type_name().getText();
+            //预处理type
+            typeRaw = typeRaw.toUpperCase();
+            typeRaw.replaceAll(" ","");
+            if(typeRaw.charAt(0)=='S'){
+
+            }
+            ColumnType columnType = ColumnType.valueOf(column_defContext.type_name().getText());
+
         }
     }
 
