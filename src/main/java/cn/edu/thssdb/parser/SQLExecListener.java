@@ -20,6 +20,7 @@ public class SQLExecListener extends SQLBaseListener {
 
     @Override
     public void enterParse(SQLParser.ParseContext ctx){
+        status.setMsg("\n");
         try {
             manager = new Manager();
             manager.switchDatabase("public");
@@ -131,6 +132,13 @@ public class SQLExecListener extends SQLBaseListener {
             success = false;
             status.msg+="Failed to create table.";
         }
+    }
+
+    @Override
+    public void exitDrop_table_stmt(SQLParser.Drop_table_stmtContext ctx) {
+        String dbName = ctx.table_name().getText();
+        manager.getCurrentDB().dropTable(dbName);
+        status.msg+="Drop table successfully.";
     }
 
     @Override
