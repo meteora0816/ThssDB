@@ -13,7 +13,8 @@ public class Entry implements Comparable<Entry>, Serializable {
 
   @Override
   public int compareTo(Entry e) {
-    return value.compareTo(e.value);
+    //return value.compareTo(e.value);
+    return this.toString().compareTo(e.toString());
   }
 
   @Override

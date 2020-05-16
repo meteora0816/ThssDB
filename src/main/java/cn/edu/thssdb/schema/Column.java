@@ -34,4 +34,7 @@ public class Column implements Comparable<Column>, Serializable {
   public void setPrimary(int primary){
     this.primary = primary;
   }
+  public boolean isPrimary(){
+    return this.primary!=0;
+  }
 }

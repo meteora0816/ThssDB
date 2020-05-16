@@ -125,15 +125,15 @@ public class SQLExecListener extends SQLBaseListener {
             List<SQLParser.Column_nameContext> column_nameContexts = ctx.table_constraint().column_name();
             ArrayList<String> primaryNames = new ArrayList<>();
             int numOfPrimary = column_nameContexts.size();
-            for(int k=0;k<numOfPrimary;k++){
-                primaryNames.add(column_nameContexts.get(k).getText());
+            for (SQLParser.Column_nameContext column_nameContext : column_nameContexts) {
+                primaryNames.add(column_nameContext.getText());
             }
             System.out.println(Arrays.toString(primaryNames.toArray()));
             for (int i = 0; i < numOfColumns; i++) {
                 //System.out.println(columns[i].name());
                 if (primaryNames.contains(columns[i].name())) {
                     columns[i].setPrimary(1);
-                    //break;
+                    break;
                 }
             }
         }
@@ -183,14 +183,28 @@ public class SQLExecListener extends SQLBaseListener {
         for(int i=0;i<numOfColumn;i++){
             columnNames[i] = column_nameContexts.get(i).getText();
         }
-        List<SQLParser.Value_entryContext> value_entryContexts = ctx.value_entry();
-        int numOfEntries = value_entryContexts.size();
+        System.out.println("columnNum: "+numOfColumn);
+        //List<SQLParser.Value_entryContext> value_entryContexts = ctx.value_entry();
+        String rawEntryValue = ctx.value_entry(0).getText();
+        // 去空格
+        rawEntryValue = rawEntryValue.trim();
+        // 去括号
+        String rawWithoutBrace = "";
+        for(int i=1;i<rawEntryValue.length()-1;i++){
+            rawWithoutBrace+=rawEntryValue.charAt(i);
+        }
+        System.out.println(rawWithoutBrace);
+        String[] entryValues = rawWithoutBrace.split(",");
+        int numOfEntries = entryValues.length;
+        System.out.println("entryNum: "+numOfEntries);
         Table currentTable = manager.getCurrentDB().getTable(tableName);
 
         Entry[] entries = new Entry[numOfEntries];
+        //System.out.println(Arrays.toString(entries));
         for(int i=0;i<numOfEntries;i++){
-            entries[i] = new Entry(value_entryContexts.get(i).getText());
+            entries[i] = new Entry(entryValues[i]);
         }
+        System.out.println(Arrays.toString(entries));
         Row insertRow;
 
         if(numOfColumn == 0){

@@ -8,6 +8,7 @@ import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -36,6 +37,13 @@ public class Table implements Iterable<Row>, Serializable {
     this.columns = new ArrayList<>();
     Collections.addAll(this.columns, columns);
 
+    for(int i=0;i<this.columns.size();i++){
+        if(this.columns.get(i).isPrimary()){
+          this.primaryIndex = i;
+          break;
+        }
+    }
+    System.out.println("primaryIndex: "+this.primaryIndex);
     this.tableDir = this.databaseDir + "/" + this.tableName;
     File tableDir = new File(this.tableDir);
     // System.out.println(this.tableDir);
@@ -59,6 +67,7 @@ public class Table implements Iterable<Row>, Serializable {
     this.primaryIndex = 0;
     this.columns = new ArrayList<>();
 
+
     this.tableDir = this.databaseDir + "/" + this.tableName;
     File tableDir = new File(this.tableDir);
     if (!tableDir.exists()) {
@@ -78,6 +87,12 @@ public class Table implements Iterable<Row>, Serializable {
       this.columns = (ArrayList<Column>) in.readObject();
       in.close();
       fileIn.close();
+      for(int i=0;i<this.columns.size();i++){
+        if(this.columns.get(i).isPrimary()){
+          this.primaryIndex = i;
+          break;
+        }
+      }
     } catch (IOException | ClassNotFoundException e) {
       e.printStackTrace();
     }
@@ -94,7 +109,7 @@ public class Table implements Iterable<Row>, Serializable {
 
   public void insert(Row row) throws NDException {
     int n = row.entries.size();
-
+    System.out.println(Arrays.toString(row.entries.toArray()));
     // check null
     for (int i = 0; i < n; ++ i) {
       Entry val = row.entries.get(i);
