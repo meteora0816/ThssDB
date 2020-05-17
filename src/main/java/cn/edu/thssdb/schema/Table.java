@@ -198,6 +198,14 @@ public class Table implements Iterable<Row>, Serializable {
     file.delete();
   }
 
+  public int primaryIndex(){
+    return this.primaryIndex;
+  }
+
+  public int columnNumber(){
+    return this.columns.size();
+  }
+
   private class TableIterator implements Iterator<Row> {
     private Iterator<Pair<Entry, Row>> iterator;
 

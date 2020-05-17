@@ -12,6 +12,7 @@ import com.sun.org.apache.bcel.internal.generic.GotoInstruction;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class SQLExecListener extends SQLBaseListener {
@@ -171,6 +172,7 @@ public class SQLExecListener extends SQLBaseListener {
         for(int i=0;i<len;i++){
             status.msg+=columns.get(i).toString();
         }
+        status.msg+="Number of Rows: "+table.index.size()+"\n";
     }
 
     @Override
@@ -235,6 +237,89 @@ public class SQLExecListener extends SQLBaseListener {
             success = false;
             status.msg+="Some of your insert values cannot be null.\n";
         }
+    }
+
+    @Override public void exitDelete_stmt(SQLParser.Delete_stmtContext ctx) {
+        String tableName = ctx.table_name().getText();
+        Table currentTable = manager.getCurrentDB().getTable(tableName);
+        String comparator = ctx.multiple_condition().condition().comparator().getText();
+        System.out.println(comparator);
+        String attrName = ctx.multiple_condition().condition().expression(0).getText();
+        String attrValue = ctx.multiple_condition().condition().expression(1).getText();
+        System.out.println(attrName);
+        System.out.println(attrValue);
+        //由于表的delete方法的参数是主键，所以首先找到所有被删除的行的主键
+        ArrayList<Entry> deleteEntries = new ArrayList<>(); //被删除的行的主键
+        //找到传入的语句中的attrName是第几列
+        int attrNameIndex = 0;
+        ArrayList<Column> currentColumns = currentTable.columns;
+        for(int i=0;i<currentTable.columnNumber();i++){
+            System.out.println(currentColumns.get(i).name());
+            if(currentColumns.get(i).name().equals(attrName)){
+                attrNameIndex = i;
+                break;
+            }
+        }
+        int primaryIndex = currentTable.primaryIndex();
+        Entry attrValueEntry = new Entry(attrValue);
+        Iterator<Row> iterator = currentTable.iterator();
+        switch (comparator){
+            case "=":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    //System.out.println(currentRow);
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)==0){
+                        deleteEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
+            case "<":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)<0){
+                        deleteEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
+            case ">":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)>0){
+                        deleteEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
+            case "<=":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)<=0){
+                        deleteEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
+            case ">=":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)>=0){
+                        deleteEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
+            case "<>":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)!=0){
+                        deleteEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        for (Entry deleteEntry : deleteEntries) {
+            currentTable.delete(deleteEntry);
+        }
+        status.msg+="Delete Successfully.\n";
     }
 
     @Override
