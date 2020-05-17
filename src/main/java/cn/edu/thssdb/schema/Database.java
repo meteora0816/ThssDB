@@ -5,6 +5,7 @@ import cn.edu.thssdb.query.QueryTable;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import cn.edu.thssdb.schema.Table;
 
@@ -137,5 +138,17 @@ public class Database {
       this.tables.get(key).persist();
     }
     this.persist();
+  }
+
+  public String show(){
+    // 显示数据库信息
+    Set<String> set = this.tables.keySet();
+    StringBuilder ret = new StringBuilder();
+    ret.append(this.name).append(":\n");
+    ret.append(this.tables.size()).append(" table(s)\n");
+    for(String tableName:set){
+      ret.append(tableName).append("\n");
+    }
+    return ret.toString();
   }
 }

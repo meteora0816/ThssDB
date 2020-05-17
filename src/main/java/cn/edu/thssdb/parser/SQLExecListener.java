@@ -86,6 +86,18 @@ public class SQLExecListener extends SQLBaseListener {
     }
 
     @Override
+    public void exitShow_table_stmt(SQLParser.Show_table_stmtContext ctx) {
+        String dbName = ctx.database_name().getText();
+        try {
+            manager.switchDatabase(dbName);
+            status.msg+=manager.getCurrentDB().show();
+        }catch(IOException e){
+            success = false;
+            status.msg+="Fail to load required database.";
+        }
+    }
+
+    @Override
     public void exitCreate_table_stmt(SQLParser.Create_table_stmtContext ctx) {
         String tableName = ctx.table_name().getText();
         List<SQLParser.Column_defContext> columnDefCtxs = ctx.column_def();

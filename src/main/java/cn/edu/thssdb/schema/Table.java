@@ -199,6 +199,7 @@ public class Table implements Iterable<Row>, Serializable {
     file.delete();
   }
 
+
   public int primaryIndex(){
     return this.primaryIndex;
   }
