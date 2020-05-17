@@ -13,8 +13,20 @@ public class Entry implements Comparable<Entry>, Serializable {
 
   @Override
   public int compareTo(Entry e) {
+    if(this.value==null && e.value==null){
+      return 0;
+    }
+    else if(this.value == null){
+      return -1;
+    }
+    else if(e.value == null){
+      return 1;
+    }
+    else{
+      return this.value.compareTo(e.value);
+    }
     //return value.compareTo(e.value);
-    return this.toString().compareTo(e.toString());
+    //return this.toString().compareTo(e.toString());
   }
 
   @Override

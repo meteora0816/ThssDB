@@ -188,8 +188,8 @@ public class SQLExecListener extends SQLBaseListener {
         Table table = manager.getCurrentDB().getTable(tableName);
         List<Column> columns = table.columns;
         int len = columns.size();
-        for(int i=0;i<len;i++){
-            status.msg+=columns.get(i).toString();
+        for (Column column : columns) {
+            status.msg += column.toString();
         }
         status.msg+="Number of Rows: "+table.index.size()+"\n";
     }
@@ -209,12 +209,12 @@ public class SQLExecListener extends SQLBaseListener {
         // 去空格
         rawEntryValue = rawEntryValue.trim();
         // 去括号
-        String rawWithoutBrace = "";
+        StringBuilder rawWithoutBrace = new StringBuilder();
         for(int i=1;i<rawEntryValue.length()-1;i++){
-            rawWithoutBrace+=rawEntryValue.charAt(i);
+            rawWithoutBrace.append(rawEntryValue.charAt(i));
         }
         System.out.println(rawWithoutBrace);
-        String[] entryValues = rawWithoutBrace.split(",");
+        String[] entryValues = rawWithoutBrace.toString().split(",");
         int numOfEntries = entryValues.length;
         System.out.println("entryNum: "+numOfEntries);
         Table currentTable = manager.getCurrentDB().getTable(tableName);
@@ -235,7 +235,7 @@ public class SQLExecListener extends SQLBaseListener {
             int numOfRealColumns = currentTable.columns.size();
             Entry[] realEntries = new Entry[numOfRealColumns];
             for(int i=0;i<numOfRealColumns;i++){
-                realEntries[i] = null;
+                realEntries[i] = new Entry(null);
             }
             for(int i=0;i<numOfColumn;i++){ //check every column
                 int index;
