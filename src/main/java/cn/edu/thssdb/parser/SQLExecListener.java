@@ -32,6 +32,12 @@ public class SQLExecListener extends SQLBaseListener {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void exitShow_db_stmt(SQLParser.Show_db_stmtContext ctx) {
+        status.msg+=manager.show();
+    }
+
     @Override
     public void exitCreate_db_stmt(SQLParser.Create_db_stmtContext ctx) {
         //resp = new ExecuteStatementResp();

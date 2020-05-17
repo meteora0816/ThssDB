@@ -116,6 +116,15 @@ public class Manager {
         }
     }
 
+    public String show(){
+        StringBuilder ret = new StringBuilder();
+        ret.append(this.databases.size()).append(" database(s):\n");
+        for(String dbName:this.databases.keySet()){
+            ret.append(dbName).append("\n");
+        }
+        return ret.toString();
+    }
+
     private static class ManagerHolder {
         private static Manager INSTANCE;
 
