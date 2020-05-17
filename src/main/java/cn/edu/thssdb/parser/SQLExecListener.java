@@ -370,27 +370,71 @@ public class SQLExecListener extends SQLBaseListener {
                     }
                 }
                 break;
+            case "<":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    System.out.println(currentRow);
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)<0){
+                        updateEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
+            case ">":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    System.out.println(currentRow);
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)>0){
+                        updateEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
+            case "<=":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    System.out.println(currentRow);
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)<=0){
+                        updateEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
+            case ">=":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    System.out.println(currentRow);
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)>=0){
+                        updateEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
+            case "<>":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    System.out.println(currentRow);
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)!=0){
+                        updateEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
             default:
                 break;
         }
-        for(int i=0;i<updateEntries.size();i++){
-            System.out.println(updateEntries.get(i));
-            Row updateRow = currentTable.getRow(updateEntries.get(i));
+        for (Entry updateEntry : updateEntries) {
+            System.out.println(updateEntry);
+            Row updateRow = currentTable.getRow(updateEntry);
             System.out.println(updateRow);
             ArrayList<Entry> updateRowEntries = updateRow.getEntries();
             Entry[] newRowEntries = new Entry[updateRowEntries.size()];
             //ArrayList<Entry> newRowEntries = new ArrayList<>();
-            for(int j=0;j<updateRowEntries.size();j++){
-                if(j==attrToBeUpdatedIndex){
+            for (int j = 0; j < updateRowEntries.size(); j++) {
+                if (j == attrToBeUpdatedIndex) {
                     newRowEntries[j] = new Entry(valueTobeUpdated);
-                }
-                else{
+                } else {
                     newRowEntries[j] = updateRowEntries.get(j);
                 }
             }
             //updateRowEntries.get(attrToBeUpdatedIndex) = new Entry(valueTobeUpdated);
             Row newRow = new Row(newRowEntries);
-            currentTable.update(updateEntries.get(i),newRow);
+            currentTable.update(updateEntry, newRow);
         }
         status.msg+="Update Successfully.\n";
     }
