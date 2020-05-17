@@ -30,8 +30,13 @@ public class Row implements Serializable {
     if (entries == null)
       return "EMPTY";
     StringJoiner sj = new StringJoiner(", ");
-    for (Entry e : entries)
-      sj.add(e.toString());
+    for (Entry e : entries) {
+      if(e!=null) {
+        sj.add(e.toString());
+      }else{
+        sj.add("null");
+      }
+    }
     return sj.toString();
   }
 }

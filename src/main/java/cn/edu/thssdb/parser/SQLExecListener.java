@@ -10,6 +10,7 @@ import com.sun.org.apache.bcel.internal.generic.GotoInstruction;
 
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -176,8 +177,7 @@ public class SQLExecListener extends SQLBaseListener {
     }
 
     @Override
-    public void
-    exitInsert_stmt(SQLParser.Insert_stmtContext ctx) {
+    public void exitInsert_stmt(SQLParser.Insert_stmtContext ctx) {
         String tableName = ctx.table_name().getText();
         List<SQLParser.Column_nameContext> column_nameContexts = ctx.column_name();
         int numOfColumn = column_nameContexts.size();
@@ -239,7 +239,8 @@ public class SQLExecListener extends SQLBaseListener {
         }
     }
 
-    @Override public void exitDelete_stmt(SQLParser.Delete_stmtContext ctx) {
+    @Override
+    public void exitDelete_stmt(SQLParser.Delete_stmtContext ctx) {
         String tableName = ctx.table_name().getText();
         Table currentTable = manager.getCurrentDB().getTable(tableName);
         String comparator = ctx.multiple_condition().condition().comparator().getText();
@@ -320,6 +321,78 @@ public class SQLExecListener extends SQLBaseListener {
             currentTable.delete(deleteEntry);
         }
         status.msg+="Delete Successfully.\n";
+    }
+
+    @Override
+    public void exitUpdate_stmt(SQLParser.Update_stmtContext ctx) {
+        // 更新哪个表
+        String tableName = ctx.table_name().getText();
+        System.out.println(tableName);
+        // 更新哪一列
+        String attrToBeUpdated = ctx.column_name().getText();
+        System.out.println(attrToBeUpdated);
+        // 更新为何值
+        String valueTobeUpdated = ctx.expression().getText();
+        System.out.println(valueTobeUpdated);
+        Table currentTable = manager.getCurrentDB().getTable(tableName);
+        // 更新哪一行，找到主键
+        String comparator = ctx.multiple_condition().condition().comparator().getText();
+        String attrName = ctx.multiple_condition().condition().expression(0).getText();
+        String attrValue = ctx.multiple_condition().condition().expression(1).getText();
+        // 条件中的attrName是第几列
+        int attrNameIndex = 0;
+        ArrayList<Column> currentColumns = currentTable.columns;
+        for(int i=0;i<currentTable.columnNumber();i++){
+            if(currentColumns.get(i).name().equals(attrName)){
+                attrNameIndex = i;
+                break;
+            }
+        }
+        // 更新中的attrToBeUpdated是第几列
+        int attrToBeUpdatedIndex = 0;
+        for(int i=0;i<currentTable.columnNumber();i++){
+            if(currentColumns.get(i).name().equals(attrToBeUpdated)){
+                attrToBeUpdatedIndex = i;
+                break;
+            }
+        }
+        int primaryIndex = currentTable.primaryIndex();
+        Entry attrValueEntry = new Entry(attrValue);
+        ArrayList<Entry> updateEntries = new ArrayList<>(); //被更新的行的主键
+        Iterator<Row> iterator = currentTable.iterator();
+        switch (comparator){
+            case "=":
+                while(iterator.hasNext()){
+                    Row currentRow = iterator.next();
+                    System.out.println(currentRow);
+                    if(currentRow.getEntries().get(attrNameIndex).compareTo(attrValueEntry)==0){
+                        updateEntries.add(currentRow.getEntries().get(primaryIndex));
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        for(int i=0;i<updateEntries.size();i++){
+            System.out.println(updateEntries.get(i));
+            Row updateRow = currentTable.getRow(updateEntries.get(i));
+            System.out.println(updateRow);
+            ArrayList<Entry> updateRowEntries = updateRow.getEntries();
+            Entry[] newRowEntries = new Entry[updateRowEntries.size()];
+            //ArrayList<Entry> newRowEntries = new ArrayList<>();
+            for(int j=0;j<updateRowEntries.size();j++){
+                if(j==attrToBeUpdatedIndex){
+                    newRowEntries[j] = new Entry(valueTobeUpdated);
+                }
+                else{
+                    newRowEntries[j] = updateRowEntries.get(j);
+                }
+            }
+            //updateRowEntries.get(attrToBeUpdatedIndex) = new Entry(valueTobeUpdated);
+            Row newRow = new Row(newRowEntries);
+            currentTable.update(updateEntries.get(i),newRow);
+        }
+        status.msg+="Update Successfully.\n";
     }
 
     @Override

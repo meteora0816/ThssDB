@@ -137,6 +137,7 @@ public class Table implements Iterable<Row>, Serializable {
   public void update(Entry entry, Row row) {
     if (this.index.contains(entry)) {
       this.index.update(entry, row);
+      System.out.println("update row \""+row+"\" in "+this.tableName);
     }
     else {
       System.out.println("Row " + entry.value + " doesn't exist.");
