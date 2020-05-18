@@ -479,7 +479,7 @@ public class SQLExecListener extends SQLBaseListener {
                     //resultTables.add(result_columnContexts.get(i).column_full_name().table_name());
                     if (result_columnContext.column_full_name().table_name() == null) {// * . attrName
                         resultTables.add("*");
-                        //System.out.println("result tables: *");
+                        System.out.println("result tables: *");
                     } else {
                         resultTables.add(result_columnContext.column_full_name().table_name().getText());
                         //System.out.println(result_columnContexts.get(i).column_full_name().table_name().getText());
@@ -551,10 +551,10 @@ public class SQLExecListener extends SQLBaseListener {
         //System.out.println("operator: "+whereComparator);
         if(isSingleTable){
             // 单表查询
+            Table currentTable = manager.getCurrentDB().getTable(leftTableName);
+            ArrayList<Column> columns = currentTable.columns;
             if(selectAll){
                 //全选
-                Table currentTable = manager.getCurrentDB().getTable(leftTableName);
-                ArrayList<Column> columns = currentTable.columns;
                 resp.columnsList = new ArrayList<>();
                 resp.rowList = new ArrayList<>();
                 for (Column column : columns) {
@@ -639,6 +639,36 @@ public class SQLExecListener extends SQLBaseListener {
             }
             else{
                 // 选择某几列
+                //System.out.println(Arrays.toString(resultColumns.toArray()));
+                resp.columnsList = new ArrayList<>();
+                resp.rowList = new ArrayList<>();
+                ArrayList<Integer> attrIndices = new ArrayList<>();
+                //resp.columnsList.addAll(resultColumns);
+                for(int i=0;i<columns.size();i++){
+                    if(resultColumns.contains(columns.get(i).name())){
+                        attrIndices.add(i);
+                    }
+                }
+                //这一步不多余，否则输出的表可能表头与内容不匹配
+                for(int i=0;i<attrIndices.size();i++){
+                    resp.columnsList.add(columns.get(i).name());
+                }
+                if(whereAttrName==null){
+                    //没有选择条件
+                    Iterator<Row> iterator = currentTable.iterator();
+                    while(iterator.hasNext()){
+                        Row currentRow = iterator.next();
+                        ArrayList<String> tmpRow = new ArrayList<>();
+                        String partRow = "";
+                        for(int i=0;i<attrIndices.size()-1;i++){
+                            int index = attrIndices.get(i);
+                            partRow+=currentRow.getEntries().get(index).toString()+", ";
+                        }
+                        partRow+=currentRow.getEntries().get(attrIndices.size()-1).toString();
+                        tmpRow.add(partRow);
+                        resp.rowList.add(tmpRow);
+                    }
+                }
             }
 
         }
