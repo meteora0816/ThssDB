@@ -493,6 +493,8 @@ public class SQLExecListener extends SQLBaseListener {
         boolean isSingleTable = false; //单表查询
         String leftTableName = "";
         String rightTableName = "";
+        String leftTableAttrName = "";
+        String rightTableAttrName = "";
         if(ctx.table_query(0).table_name().size()==1){
             isSingleTable = true;
             leftTableName = ctx.table_query(0).table_name(0).getText();
@@ -500,9 +502,48 @@ public class SQLExecListener extends SQLBaseListener {
         else{
             leftTableName = ctx.table_query(0).table_name(0).getText();
             rightTableName = ctx.table_query(0).table_name(1).getText();
+            // 解析on tableName1.attrName1 = tableName2.attrName2
+            // 只做这一个功能了，乞丐版就乞丐版吧
+            leftTableAttrName = ctx.table_query(0)
+                    .multiple_condition()
+                    .condition()
+                    .expression(0)
+                    .comparer()
+                    .column_full_name()
+                    .column_name()
+                    .getText();
+            rightTableAttrName = ctx.table_query(0)
+                    .multiple_condition()
+                    .condition()
+                    .expression(1)
+                    .comparer()
+                    .column_full_name()
+                    .column_name()
+                    .getText();
         }
-        System.out.println("left: "+leftTableName);
-        System.out.println("right: "+rightTableName);
+        //System.out.println("leftAttr: "+leftTableAttrName);
+        //System.out.println("rightAttr: "+rightTableAttrName);
+        // where attrName = attrValue 也是乞丐版
+        String whereAttrName = ctx.multiple_condition()
+                .condition()
+                .expression(0)
+                .comparer()
+                .column_full_name()
+                .column_name()
+                .getText();
+        String whereComparator = ctx.multiple_condition()
+                .condition()
+                .comparator()
+                .getText();
+        String whereAttrValue = ctx.multiple_condition()
+                .condition()
+                .expression(1)
+                .comparer()
+                .literal_value()
+                .getText();
+        System.out.println("attrName: "+whereAttrName);
+        System.out.println("attrValue: "+whereAttrValue);
+        System.out.println("operator: "+whereComparator);
     }
 
     @Override
