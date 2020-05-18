@@ -194,6 +194,15 @@ public class Client {
       if(resp.status.code == Global.SUCCESS_CODE){
         println("Execution Succeeded.");
         println(resp.status.msg);
+        if(resp.columnsList!=null){
+          for(int i=0;i<resp.columnsList.size();i++){
+            print(resp.columnsList.get(i)+" | ");
+          }
+          print("\n--------------------\n");
+          for(int i=0;i<resp.rowList.size();i++){
+            println(resp.rowList.get(i).get(0));
+          }
+        }
       }
       else{
         println("Execution Failed.");

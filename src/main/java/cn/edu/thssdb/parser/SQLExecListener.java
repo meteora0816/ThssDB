@@ -524,26 +524,56 @@ public class SQLExecListener extends SQLBaseListener {
         //System.out.println("leftAttr: "+leftTableAttrName);
         //System.out.println("rightAttr: "+rightTableAttrName);
         // where attrName = attrValue 也是乞丐版
-        String whereAttrName = ctx.multiple_condition()
-                .condition()
-                .expression(0)
-                .comparer()
-                .column_full_name()
-                .column_name()
-                .getText();
-        String whereComparator = ctx.multiple_condition()
-                .condition()
-                .comparator()
-                .getText();
-        String whereAttrValue = ctx.multiple_condition()
-                .condition()
-                .expression(1)
-                .comparer()
-                .literal_value()
-                .getText();
-        System.out.println("attrName: "+whereAttrName);
-        System.out.println("attrValue: "+whereAttrValue);
-        System.out.println("operator: "+whereComparator);
+        String whereAttrName = null;
+        String whereComparator = null;
+        String whereAttrValue = null;
+        if(ctx.multiple_condition()!=null) {
+            whereAttrName = ctx.multiple_condition()
+                    .condition()
+                    .expression(0)
+                    .comparer()
+                    .column_full_name()
+                    .column_name()
+                    .getText();
+            whereComparator = ctx.multiple_condition()
+                    .condition()
+                    .comparator()
+                    .getText();
+            whereAttrValue = ctx.multiple_condition()
+                    .condition()
+                    .expression(1)
+                    .comparer()
+                    .literal_value()
+                    .getText();
+        }
+        //System.out.println("attrName: "+whereAttrName);
+        //System.out.println("attrValue: "+whereAttrValue);
+        //System.out.println("operator: "+whereComparator);
+        if(isSingleTable){
+            // 单表查询
+            if(selectAll){
+                //全选
+                Table currentTable = manager.getCurrentDB().getTable(leftTableName);
+                ArrayList<Column> columns = currentTable.columns;
+                resp.columnsList = new ArrayList<>();
+                resp.rowList = new ArrayList<>();
+                for (Column column : columns) {
+                    resp.columnsList.add(column.name());
+                }
+                if(whereAttrName==null){
+                    //没有选择条件
+                    for (Row currentRow : currentTable) {
+                        ArrayList<String> tmpRow = new ArrayList<>();
+                        tmpRow.add(currentRow.toString());
+                        resp.rowList.add(tmpRow);
+                    }
+                }
+            }
+
+        }
+        else{
+
+        }
     }
 
     @Override
