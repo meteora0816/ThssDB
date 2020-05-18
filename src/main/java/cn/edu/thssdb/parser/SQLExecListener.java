@@ -458,6 +458,41 @@ public class SQLExecListener extends SQLBaseListener {
     }
 
     @Override
+    public void exitSelect_stmt(SQLParser.Select_stmtContext ctx) {
+        ArrayList<String> resultTables = new ArrayList<>();  // 点后面的
+        ArrayList<String> resultColumns = new ArrayList<>(); // 点前面的
+        List<SQLParser.Result_columnContext> result_columnContexts = ctx.result_column();
+        //System.out.println(result_columnContexts.isEmpty());
+        //System.out.println(result_columnContexts.get(0).getText());
+        // 先解析选择哪些列
+        boolean selectAll = false;
+        if(result_columnContexts.get(0).getText().equals("*")){ //全选
+            selectAll = true;
+        }
+        else {
+            for (SQLParser.Result_columnContext result_columnContext : result_columnContexts) {
+                if (result_columnContext.table_name() != null) {
+                    resultTables.add(result_columnContext.table_name().getText());
+                    //System.out.println("table name: "+result_columnContexts.get(i).table_name().getText());
+                    resultColumns.add("*");
+                } else {
+                    //resultTables.add(result_columnContexts.get(i).column_full_name().table_name());
+                    if (result_columnContext.column_full_name().table_name() == null) {// * . attrName
+                        resultTables.add("*");
+                        //System.out.println("result tables: *");
+                    } else {
+                        resultTables.add(result_columnContext.column_full_name().table_name().getText());
+                        //System.out.println(result_columnContexts.get(i).column_full_name().table_name().getText());
+                    }
+                    resultColumns.add(result_columnContext.column_full_name().column_name().getText());
+                    //System.out.println(result_columnContexts.get(i).column_full_name().column_name().getText());
+                }
+            }
+        }
+
+    }
+
+    @Override
     public void exitParse(SQLParser.ParseContext ctx) {
         manager.quit();
     }
