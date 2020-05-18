@@ -489,7 +489,20 @@ public class SQLExecListener extends SQLBaseListener {
                 }
             }
         }
-
+        // 再解析从哪些表中选择
+        boolean isSingleTable = false; //单表查询
+        String leftTableName = "";
+        String rightTableName = "";
+        if(ctx.table_query(0).table_name().size()==1){
+            isSingleTable = true;
+            leftTableName = ctx.table_query(0).table_name(0).getText();
+        }
+        else{
+            leftTableName = ctx.table_query(0).table_name(0).getText();
+            rightTableName = ctx.table_query(0).table_name(1).getText();
+        }
+        System.out.println("left: "+leftTableName);
+        System.out.println("right: "+rightTableName);
     }
 
     @Override
