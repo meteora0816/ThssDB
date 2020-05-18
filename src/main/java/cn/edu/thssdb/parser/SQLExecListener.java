@@ -568,6 +568,77 @@ public class SQLExecListener extends SQLBaseListener {
                         resp.rowList.add(tmpRow);
                     }
                 }
+                else {
+                    //whereAttrName ><= whereAttrValue
+                    int attrIndex = 0;
+                    for (int i = 0; i < columns.size(); i++) {
+                        if (columns.get(i).name().equals(whereAttrName)) {
+                            attrIndex = i;
+                            break;
+                        }
+                    }
+                    switch (whereComparator) {
+                        case "=":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) == 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case "<":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) < 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case ">":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) > 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case "<=":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) <= 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case ">=":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) >= 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case "<>":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) != 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            else{
+                // 选择某几列
             }
 
         }
