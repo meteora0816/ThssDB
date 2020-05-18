@@ -655,24 +655,128 @@ public class SQLExecListener extends SQLBaseListener {
                 }
                 if(whereAttrName==null){
                     //没有选择条件
-                    Iterator<Row> iterator = currentTable.iterator();
-                    while(iterator.hasNext()){
-                        Row currentRow = iterator.next();
+                    for (Row currentRow : currentTable) {
                         ArrayList<String> tmpRow = new ArrayList<>();
-                        String partRow = "";
-                        for(int i=0;i<attrIndices.size()-1;i++){
+                        StringBuilder partRow = new StringBuilder();
+                        for (int i = 0; i < attrIndices.size() - 1; i++) {
                             int index = attrIndices.get(i);
-                            partRow+=currentRow.getEntries().get(index).toString()+", ";
+                            partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
                         }
-                        partRow+=currentRow.getEntries().get(attrIndices.size()-1).toString();
-                        tmpRow.add(partRow);
+                        partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                        tmpRow.add(partRow.toString());
                         resp.rowList.add(tmpRow);
                     }
+                }
+                else{
+                    //有选择条件
+                    int attrIndex = 0;
+                    for (int i = 0; i < columns.size(); i++) {
+                        if (columns.get(i).name().equals(whereAttrName)) {
+                            attrIndex = i;
+                            break;
+                        }
+                    }
+                    switch (whereComparator){
+                        case "=":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) == 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    StringBuilder partRow = new StringBuilder();
+                                    for (int i = 0; i < attrIndices.size() - 1; i++) {
+                                        int index = attrIndices.get(i);
+                                        partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
+                                    }
+                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    tmpRow.add(partRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case "<":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) < 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    StringBuilder partRow = new StringBuilder();
+                                    for (int i = 0; i < attrIndices.size() - 1; i++) {
+                                        int index = attrIndices.get(i);
+                                        partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
+                                    }
+                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    tmpRow.add(partRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case ">":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) > 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    StringBuilder partRow = new StringBuilder();
+                                    for (int i = 0; i < attrIndices.size() - 1; i++) {
+                                        int index = attrIndices.get(i);
+                                        partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
+                                    }
+                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    tmpRow.add(partRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case "<=":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) <= 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    StringBuilder partRow = new StringBuilder();
+                                    for (int i = 0; i < attrIndices.size() - 1; i++) {
+                                        int index = attrIndices.get(i);
+                                        partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
+                                    }
+                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    tmpRow.add(partRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case ">=":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) >= 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    StringBuilder partRow = new StringBuilder();
+                                    for (int i = 0; i < attrIndices.size() - 1; i++) {
+                                        int index = attrIndices.get(i);
+                                        partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
+                                    }
+                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    tmpRow.add(partRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case "<>":
+                            for (Row currentRow : currentTable) {
+                                if (currentRow.getEntries().get(attrIndex).compareTo(new Entry(whereAttrValue)) != 0) {
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    StringBuilder partRow = new StringBuilder();
+                                    for (int i = 0; i < attrIndices.size() - 1; i++) {
+                                        int index = attrIndices.get(i);
+                                        partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
+                                    }
+                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    tmpRow.add(partRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
                 }
             }
 
         }
         else{
+            //TODO
 
         }
     }
