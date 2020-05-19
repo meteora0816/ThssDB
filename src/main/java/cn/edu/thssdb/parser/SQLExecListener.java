@@ -116,15 +116,15 @@ public class SQLExecListener extends SQLBaseListener {
             //预处理type
             typeRaw = typeRaw.toUpperCase();
             typeRaw.replaceAll(" ","");
-            String typeLength = "32";
+            StringBuilder typeLength = new StringBuilder("32");
             if(typeRaw.charAt(0)=='S'){
-                typeLength = "";
+                typeLength = new StringBuilder();
                 for(int j=7;j<typeRaw.length()-1;j++){
-                    typeLength+=typeRaw.charAt(j);
+                    typeLength.append(typeRaw.charAt(j));
                 }
                 typeRaw = "STRING";
             }
-            int maxLength = Integer.parseInt(typeLength);
+            int maxLength = Integer.parseInt(typeLength.toString());
             ColumnType columnType = ColumnType.valueOf(typeRaw);
             boolean notNull = false;
             List<SQLParser.Column_constraintContext> column_constraintContexts = column_defContext.column_constraint();
@@ -1088,20 +1088,266 @@ public class SQLExecListener extends SQLBaseListener {
                         Row tmpLeftRow = rows.get(0);
                         Row tmpRightRow = rows.get(1);
                         for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
-                            currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
+                            currentRow.append(tmpLeftRow
+                                    .getEntries()
+                                    .get(leftAttrIndices.get(j))
+                                    .toString())
+                                    .append(", ");
                         }
-                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                        currentRow.append(tmpLeftRow
+                                .getEntries()
+                                .get(leftAttrIndices.get(leftAttrIndices.size() - 1))
+                                .toString());
                         if (!rightAttrIndices.isEmpty()) {
                             currentRow.append(", ");
                         }
                         for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
-                            currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
+                            currentRow.append(tmpRightRow
+                                    .getEntries()
+                                    .get(rightAttrIndices.get(j))
+                                    .toString())
+                                    .append(", ");
                         }
-                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                        currentRow.append(tmpRightRow
+                                .getEntries()
+                                .get(rightAttrIndices.get(rightAttrIndices.size() - 1))
+                                .toString());
                         ArrayList<String> tmpRow = new ArrayList<>();
                         tmpRow.add(currentRow.toString());
                         resp.rowList.add(tmpRow);
                     }
+                }
+                else{
+                    //有条件
+                    boolean whereInLeft = false;
+                    int whereAttrIndex = 0;
+                    Entry whereAttrEntry = new Entry(whereAttrValue);
+                    for(int i=0;i<leftColumns.size();i++){
+                        if(leftColumns.get(i).name().equals(whereAttrName)){
+                            whereAttrIndex = i;
+                            whereInLeft = true;
+                            break;
+                        }
+                    }
+                    if(!whereInLeft){
+                        for(int i=0;i<rightColumns.size();i++){
+                            if(rightColumns.get(i).name().equals(whereAttrName)){
+                                whereAttrIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    switch (whereComparator){
+                        case "=":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                Row tmpLeftRow = rows.get(0);
+                                Row tmpRightRow = rows.get(1);
+                                boolean valid = false; // 这一行是否满足where条件
+                                if (whereInLeft) {
+                                    if (tmpLeftRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) == 0) {
+                                        valid = true;
+                                    }
+                                } else {
+                                    if (tmpRightRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) == 0) {
+                                        valid = true;
+                                    }
+                                }
+                                if (valid) {
+                                    StringBuilder currentRow = new StringBuilder();
+                                    for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
+                                        currentRow
+                                                .append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString())
+                                                .append(", ");
+                                    }
+                                    currentRow
+                                            .append(tmpLeftRow.getEntries()
+                                                    .get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                    if (!rightAttrIndices.isEmpty()) {
+                                        currentRow.append(", ");
+                                    }
+                                    for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
+                                        currentRow
+                                                .append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString())
+                                                .append(", ");
+                                    }
+                                    currentRow
+                                            .append(tmpRightRow.getEntries()
+                                                    .get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case "<":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                Row tmpLeftRow = rows.get(0);
+                                Row tmpRightRow = rows.get(1);
+                                boolean valid = false; // 这一行是否满足where条件
+                                if (whereInLeft) {
+                                    if (tmpLeftRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) < 0) {
+                                        valid = true;
+                                    }
+                                } else {
+                                    if (tmpRightRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) < 0) {
+                                        valid = true;
+                                    }
+                                }
+                                if (valid) {
+                                    StringBuilder currentRow = new StringBuilder();
+                                    for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
+                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
+                                    }
+                                    currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                    if (!rightAttrIndices.isEmpty()) {
+                                        currentRow.append(", ");
+                                    }
+                                    for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
+                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
+                                    }
+                                    currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case ">":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                Row tmpLeftRow = rows.get(0);
+                                Row tmpRightRow = rows.get(1);
+                                boolean valid = false; // 这一行是否满足where条件
+                                if (whereInLeft) {
+                                    if (tmpLeftRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) > 0) {
+                                        valid = true;
+                                    }
+                                } else {
+                                    if (tmpRightRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) > 0) {
+                                        valid = true;
+                                    }
+                                }
+                                if (valid) {
+                                    StringBuilder currentRow = new StringBuilder();
+                                    for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
+                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
+                                    }
+                                    currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                    if (!rightAttrIndices.isEmpty()) {
+                                        currentRow.append(", ");
+                                    }
+                                    for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
+                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
+                                    }
+                                    currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case "<=":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                Row tmpLeftRow = rows.get(0);
+                                Row tmpRightRow = rows.get(1);
+                                boolean valid = false; // 这一行是否满足where条件
+                                if (whereInLeft) {
+                                    if (tmpLeftRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) <= 0) {
+                                        valid = true;
+                                    }
+                                } else {
+                                    if (tmpRightRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) <= 0) {
+                                        valid = true;
+                                    }
+                                }
+                                if (valid) {
+                                    StringBuilder currentRow = new StringBuilder();
+                                    for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
+                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
+                                    }
+                                    currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                    if (!rightAttrIndices.isEmpty()) {
+                                        currentRow.append(", ");
+                                    }
+                                    for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
+                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
+                                    }
+                                    currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case ">=":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                Row tmpLeftRow = rows.get(0);
+                                Row tmpRightRow = rows.get(1);
+                                boolean valid = false; // 这一行是否满足where条件
+                                if (whereInLeft) {
+                                    if (tmpLeftRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) >= 0) {
+                                        valid = true;
+                                    }
+                                } else {
+                                    if (tmpRightRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) >= 0) {
+                                        valid = true;
+                                    }
+                                }
+                                if (valid) {
+                                    StringBuilder currentRow = new StringBuilder();
+                                    for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
+                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
+                                    }
+                                    currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                    if (!rightAttrIndices.isEmpty()) {
+                                        currentRow.append(", ");
+                                    }
+                                    for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
+                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
+                                    }
+                                    currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        case "<>":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                Row tmpLeftRow = rows.get(0);
+                                Row tmpRightRow = rows.get(1);
+                                boolean valid = false; // 这一行是否满足where条件
+                                if (whereInLeft) {
+                                    if (tmpLeftRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) != 0) {
+                                        valid = true;
+                                    }
+                                } else {
+                                    if (tmpRightRow.getEntries().get(whereAttrIndex).compareTo(whereAttrEntry) != 0) {
+                                        valid = true;
+                                    }
+                                }
+                                if (valid) {
+                                    StringBuilder currentRow = new StringBuilder();
+                                    for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
+                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
+                                    }
+                                    currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                    if (!rightAttrIndices.isEmpty()) {
+                                        currentRow.append(", ");
+                                    }
+                                    for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
+                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
+                                    }
+                                    currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                    ArrayList<String> tmpRow = new ArrayList<>();
+                                    tmpRow.add(currentRow.toString());
+                                    resp.rowList.add(tmpRow);
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
                 }
             }
         }
