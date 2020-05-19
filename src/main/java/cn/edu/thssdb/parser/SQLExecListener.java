@@ -479,7 +479,7 @@ public class SQLExecListener extends SQLBaseListener {
                     //resultTables.add(result_columnContexts.get(i).column_full_name().table_name());
                     if (result_columnContext.column_full_name().table_name() == null) {// * . attrName
                         resultTables.add("*");
-                        System.out.println("result tables: *");
+                        //System.out.println("result tables: *");
                     } else {
                         resultTables.add(result_columnContext.column_full_name().table_name().getText());
                         //System.out.println(result_columnContexts.get(i).column_full_name().table_name().getText());
@@ -797,15 +797,11 @@ public class SQLExecListener extends SQLBaseListener {
                 }
             }
             ArrayList<ArrayList<Row>> joinedTable = new ArrayList<>();
-            Iterator<Row> leftIterator = leftTable.iterator();
-            while(leftIterator.hasNext()){
-                Row currentLeftRow = leftIterator.next();
+            for (Row currentLeftRow : leftTable) {
                 Entry leftEntry = currentLeftRow.getEntries().get(leftOnIndex);
-                Iterator<Row> rightIterator = rightTable.iterator();
-                while(rightIterator.hasNext()){
-                    Row currentRightRow = rightIterator.next();
+                for (Row currentRightRow : rightTable) {
                     Entry rightEntry = currentRightRow.getEntries().get(rightOnIndex);
-                    if(leftEntry.compareTo(rightEntry)==0){
+                    if (leftEntry.compareTo(rightEntry) == 0) {
                         // 满足条件，两行join
                         ArrayList<Row> joinedRow = new ArrayList<>();
                         joinedRow.add(currentLeftRow);
@@ -1018,6 +1014,93 @@ public class SQLExecListener extends SQLBaseListener {
                             break;
                         default:
                             break;
+                    }
+                }
+            }
+            else{
+                //部分列
+                ArrayList<Integer> leftAttrIndices = new ArrayList<>();
+                ArrayList<Integer> rightAttrIndices = new ArrayList<>();
+                for(int i=0;i<resultTables.size();i++){
+                    String tmpTableName = resultTables.get(i);
+                    String tmpColumnName = resultColumns.get(i);
+                    if(tmpTableName.equals("*")){
+                        boolean inLeft = false;
+                        for(int j=0;j<leftColumns.size();j++){
+                            if(leftColumns.get(j).name().equals(tmpColumnName)){
+                                leftAttrIndices.add(j);
+                                inLeft = true;
+                                break;
+                            }
+                        }
+                        if(!inLeft){
+                            for(int j=0;j<rightColumns.size();j++){
+                                if(rightColumns.get(j).name().equals(tmpColumnName)){
+                                    rightAttrIndices.add(j);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if(resultColumns.get(i).equals("*")){
+                        if(tmpTableName.equals(leftTableName)){
+                            for(int j=0;j<leftColumns.size();j++){
+                                leftAttrIndices.add(j);
+                            }
+                        }
+                        else{
+                            for(int j=0;j<rightColumns.size();j++){
+                                rightAttrIndices.add(j);
+                            }
+                        }
+                    }
+                    else{
+                        if(tmpTableName.equals(leftTableName)){
+                            for(int j=0;j<leftColumns.size();j++){
+                                if(leftColumns.get(j).name().equals(tmpColumnName)){
+                                    leftAttrIndices.add(j);
+                                    break;
+                                }
+                            }
+                        }
+                        else{
+                            for(int j=0;j<rightColumns.size();j++){
+                                if(rightColumns.get(j).name().equals(tmpColumnName)){
+                                    rightAttrIndices.add(j);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                resp.columnsList = new ArrayList<>();
+                for (Integer leftAttrIndex : leftAttrIndices) {
+                    resp.columnsList.add("L." + leftColumns.get(leftAttrIndex).name());
+                }
+                for (Integer rightAttrIndex : rightAttrIndices) {
+                    resp.columnsList.add("R." + rightColumns.get(rightAttrIndex).name());
+                }
+                resp.rowList = new ArrayList<>();
+                if(whereAttrName == null){
+                    //无条件
+                    for (ArrayList<Row> rows : joinedTable) {
+                        StringBuilder currentRow = new StringBuilder();
+                        Row tmpLeftRow = rows.get(0);
+                        Row tmpRightRow = rows.get(1);
+                        for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
+                            currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
+                        }
+                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                        if (!rightAttrIndices.isEmpty()) {
+                            currentRow.append(", ");
+                        }
+                        for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
+                            currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
+                        }
+                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                        ArrayList<String> tmpRow = new ArrayList<>();
+                        tmpRow.add(currentRow.toString());
+                        resp.rowList.add(tmpRow);
                     }
                 }
             }
