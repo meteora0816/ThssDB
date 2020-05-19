@@ -818,18 +818,206 @@ public class SQLExecListener extends SQLBaseListener {
                 // 全选
                 resp.columnsList = new ArrayList<>();
                 resp.rowList = new ArrayList<>();
-                for(int i=0;i<leftColumns.size();i++){
-                    resp.columnsList.add("L."+leftColumns.get(i).name());
+                for (Column leftColumn : leftColumns) {
+                    resp.columnsList.add("L." + leftColumn.name());
                 }
-                for(int i=0;i<rightColumns.size();i++){
-                    resp.columnsList.add("R."+rightColumns.get(i).name());
+                for (Column rightColumn : rightColumns) {
+                    resp.columnsList.add("R." + rightColumn.name());
                 }
                 if(whereAttrName == null){
                     //没有选择条件
-                    for(int i=0;i<joinedTable.size();i++){
+                    for (ArrayList<Row> rows : joinedTable) {
                         ArrayList<String> tmpRow = new ArrayList<>();
-                        tmpRow.add(joinedTable.get(i).get(0).toString()+", "+joinedTable.get(i).get(1).toString());
+                        tmpRow.add(rows.get(0).toString() + ", " + rows.get(1).toString());
                         resp.rowList.add(tmpRow);
+                    }
+                }
+                else{
+                    //有选择条件
+                    //如果属性名重名，优先捕捉leftTable中的
+                    boolean inLeft = false;
+                    int whereAttrIndex = 0;
+                    for(int i=0;i<leftColumns.size();i++){
+                        if(leftColumns.get(i).name().equals(whereAttrName)){
+                            inLeft = true;
+                            whereAttrIndex = i;
+                            break;
+                        }
+                    }
+                    if(!inLeft){
+                        for(int i=0;i<rightColumns.size();i++){
+                            if(rightColumns.get(i).name().equals(whereAttrName)){
+                                whereAttrIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    Entry whereAttrValueEntry = new Entry(whereAttrValue);
+                    switch (whereComparator){
+                        case "=":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                if (inLeft) {
+                                    if (rows
+                                            .get(0)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) == 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                } else {
+                                    if (rows
+                                            .get(1)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) == 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                }
+                            }
+                            break;
+                        case "<":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                if (inLeft) {
+                                    if (rows
+                                            .get(0)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) < 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                } else {
+                                    if (rows
+                                            .get(1)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) < 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                }
+                            }
+                            break;
+                        case ">":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                if (inLeft) {
+                                    if (rows
+                                            .get(0)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) > 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                } else {
+                                    if (rows
+                                            .get(1)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) > 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                }
+                            }
+                            break;
+                        case "<=":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                if (inLeft) {
+                                    if (rows
+                                            .get(0)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) <= 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                } else {
+                                    if (rows
+                                            .get(1)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) <= 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                }
+                            }
+                            break;
+                        case ">=":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                if (inLeft) {
+                                    if (rows
+                                            .get(0)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) >= 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                } else {
+                                    if (rows
+                                            .get(1)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) >= 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                }
+                            }
+                            break;
+                        case "<>":
+                            for (ArrayList<Row> rows : joinedTable) {
+                                if (inLeft) {
+                                    if (rows
+                                            .get(0)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) != 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                } else {
+                                    if (rows
+                                            .get(1)
+                                            .getEntries()
+                                            .get(whereAttrIndex)
+                                            .compareTo(whereAttrValueEntry) != 0) {
+                                        ArrayList<String> tmpRow = new ArrayList<>();
+                                        tmpRow.add(rows.get(0).toString() + ", "
+                                                + rows.get(1).toString());
+                                        resp.rowList.add(tmpRow);
+                                    }
+                                }
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
