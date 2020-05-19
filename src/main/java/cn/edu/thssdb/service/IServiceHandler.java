@@ -120,7 +120,7 @@ public class IServiceHandler implements IService.Iface {
     // TODO
     /*
     需要根据具体数据库操作实现。已经实现：创建/切换数据库，删除数据库，创建表，删除表, 显示表信息，
-    显示所有数据库，显示数据库信息，插入行，删除行，更新行
+    显示所有数据库，显示数据库信息，插入行，删除行，更新行，单表有/无条件全部行/部分行查询
      */
     ExecuteStatementResp resp = new ExecuteStatementResp();
     long sessionId = req.sessionId;

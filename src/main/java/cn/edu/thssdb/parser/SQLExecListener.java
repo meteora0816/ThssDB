@@ -459,8 +459,8 @@ public class SQLExecListener extends SQLBaseListener {
 
     @Override
     public void exitSelect_stmt(SQLParser.Select_stmtContext ctx) {
-        ArrayList<String> resultTables = new ArrayList<>();  // 点后面的
-        ArrayList<String> resultColumns = new ArrayList<>(); // 点前面的
+        ArrayList<String> resultTables = new ArrayList<>();  // 点前面的
+        ArrayList<String> resultColumns = new ArrayList<>(); // 点后面的
         List<SQLParser.Result_columnContext> result_columnContexts = ctx.result_column();
         //System.out.println(result_columnContexts.isEmpty());
         //System.out.println(result_columnContexts.get(0).getText());
@@ -776,8 +776,63 @@ public class SQLExecListener extends SQLBaseListener {
 
         }
         else{
-            //TODO
-
+            //多表查询
+            //先执行join
+            Table leftTable = manager.getCurrentDB().getTable(leftTableName);
+            Table rightTable = manager.getCurrentDB().getTable(rightTableName);
+            ArrayList<Column> leftColumns = leftTable.columns;
+            ArrayList<Column> rightColumns = rightTable.columns;
+            int leftOnIndex = 0;
+            int rightOnIndex = 0;
+            for(int i=0;i<leftColumns.size();i++){
+                if(leftColumns.get(i).name().equals(leftTableAttrName)){
+                    leftOnIndex = i;
+                    break;
+                }
+            }
+            for(int i=0;i<rightColumns.size();i++){
+                if(rightColumns.get(i).name().equals(rightTableAttrName)){
+                    rightOnIndex = i;
+                    break;
+                }
+            }
+            ArrayList<ArrayList<Row>> joinedTable = new ArrayList<>();
+            Iterator<Row> leftIterator = leftTable.iterator();
+            while(leftIterator.hasNext()){
+                Row currentLeftRow = leftIterator.next();
+                Entry leftEntry = currentLeftRow.getEntries().get(leftOnIndex);
+                Iterator<Row> rightIterator = rightTable.iterator();
+                while(rightIterator.hasNext()){
+                    Row currentRightRow = rightIterator.next();
+                    Entry rightEntry = currentRightRow.getEntries().get(rightOnIndex);
+                    if(leftEntry.compareTo(rightEntry)==0){
+                        // 满足条件，两行join
+                        ArrayList<Row> joinedRow = new ArrayList<>();
+                        joinedRow.add(currentLeftRow);
+                        joinedRow.add(currentRightRow);
+                        joinedTable.add(joinedRow);
+                    }
+                }
+            }
+            if(selectAll){
+                // 全选
+                resp.columnsList = new ArrayList<>();
+                resp.rowList = new ArrayList<>();
+                for(int i=0;i<leftColumns.size();i++){
+                    resp.columnsList.add("L."+leftColumns.get(i).name());
+                }
+                for(int i=0;i<rightColumns.size();i++){
+                    resp.columnsList.add("R."+rightColumns.get(i).name());
+                }
+                if(whereAttrName == null){
+                    //没有选择条件
+                    for(int i=0;i<joinedTable.size();i++){
+                        ArrayList<String> tmpRow = new ArrayList<>();
+                        tmpRow.add(joinedTable.get(i).get(0).toString()+", "+joinedTable.get(i).get(1).toString());
+                        resp.rowList.add(tmpRow);
+                    }
+                }
+            }
         }
     }
 
