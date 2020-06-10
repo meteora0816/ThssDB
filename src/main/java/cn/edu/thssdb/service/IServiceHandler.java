@@ -100,8 +100,8 @@ public class IServiceHandler implements IService.Iface {
   }
 
   @Override
-  public DisconnetResp disconnect(DisconnetReq req) throws RPCException,TException {
-    DisconnetResp resp = new DisconnetResp();
+  public DisconnectResp disconnect(DisconnectReq req) throws RPCException,TException {
+    DisconnectResp resp = new DisconnectResp();
     // 大致要检查传入的sessionId, 然后把它从池中移除
     long sessionId = req.sessionId;
     if(sessionIds.contains(sessionId)){

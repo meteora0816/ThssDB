@@ -36,11 +36,11 @@ struct ConnectResp{
   2: required i64 sessionId
 }
 
-struct DisconnetReq{
+struct DisconnectReq{
   1: required i64 sessionId
 }
 
-struct DisconnetResp{
+struct DisconnectResp{
   1: required Status status
 }
 
@@ -73,6 +73,6 @@ service IService {
   WithdrawResp withdraw(1: WithdrawReq req)throws(1:RPCException e);
   ConnectResp connect(1: ConnectReq req)throws(1:RPCException e);
   // DisconnetResp disconnect(1: DisconnetResp req);
-  DisconnetResp disconnect(1:DisconnetReq req)throws(1:RPCException e);
+  DisconnectResp disconnect(1:DisconnectReq req)throws(1:RPCException e);
   ExecuteStatementResp executeStatement(1: ExecuteStatementReq req)throws(1:RPCException e);
 }

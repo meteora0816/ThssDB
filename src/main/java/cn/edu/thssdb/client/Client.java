@@ -166,13 +166,13 @@ public class Client {
   }
   // real disconnect
   private static void disconnect(long SessionId){
-    DisconnetReq req = new DisconnetReq(SessionId);
+    DisconnectReq req = new DisconnectReq(SessionId);
     if(sessionId == -1){
       println("You have not logged in yet.");
     }
     else{
       try{
-        DisconnetResp resp = client.disconnect(req);
+        DisconnectResp resp = client.disconnect(req);
         if(resp.status.code == Global.SUCCESS_CODE){
           println("Disconnection Succeeded.");
           sessionId = -1;
