@@ -280,8 +280,16 @@ public class Client {
   }
 
   static void showHelp() {
-    // TODO
-    println("DO IT YOURSELF");
+
+    println("Welcome to ThssDB written by swy, lxy & lz");
+    println("To use the database system, you must register first, enter \" register;\" to register");
+    println("To connect the database, enter \"connect;\"");
+    println("To execute sql statements, enter \"execute\" first");
+    println("Notice that if you want to use \" use \" statement, you must use it with the sql statement in one statement.");
+    println("For example: use test;select * from tableTest;");
+    println("To disconnect from the system, enter \"disconnect;\"");
+    println("To withdraw your account, enter \"withdraw;\"");
+    println("Good Luck!");
   }
 
   static void echoStarting() {
