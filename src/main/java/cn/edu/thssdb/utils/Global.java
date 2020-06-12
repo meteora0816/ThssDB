@@ -18,5 +18,18 @@ public class Global {
   public static final String EXEC = "execute;";
   public static final String WDRW = "withdraw;";
 
+  public static final String CREATE_DATABASE = "create database";
+  public static final String DROP_DATABASE = "drop database";
+  public static final String SHOW_DATABASES = "show databases";
+  public static final String USE = "use";
+  public static final String CREATE_TABLE = "create table";
+  public static final String DROP_TABLE = "drop table";
+  public static final String SHOW_DATABASE = "show database";
+  public static final String SHOW_TABLE = "show table";
+  public static final String INSERT_INTO = "insert into";
+  public static final String DELETE_FROM = "delete from";
+  public static final String UPDATE = "update";
+  public static final String SELECT = "select";
+
   public static final String S_URL_INTERNAL = "jdbc:default:connection";
 }

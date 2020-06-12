@@ -127,7 +127,7 @@ public class IServiceHandler implements IService.Iface {
     if(sessionIds.contains(sessionId)){
       System.out.println("parse begins");
       String statement = req.statement;
-      //System.out.println(statement);
+      System.out.println(statement);
 
       CodePointCharStream charStream = CharStreams.fromString(statement);
       //System.out.println(charStream.toString());
@@ -136,7 +136,7 @@ public class IServiceHandler implements IService.Iface {
       CommonTokenStream tokens = new CommonTokenStream(lexer);
       SQLParser parser = new SQLParser(tokens);
       ParseTree tree = parser.parse();
-      //System.out.println(tree.toStringTree(parser));
+      // System.out.println(tree.toStringTree(parser));
       ParseTreeWalker walker = new ParseTreeWalker();
       SQLExecListener listener = new SQLExecListener();
 
@@ -150,6 +150,12 @@ public class IServiceHandler implements IService.Iface {
     }
     return resp;
   }
+
+//  public ExecuteStatementResp createDatabase(createDatabaseReq req) {
+//    ExecuteStatementResp resp = new ExecuteStatementResp();
+//
+//    return resp;
+//  }
 
   @Override
   public RegisterResp registNew(RegisterReq req) throws RPCException, TException{

@@ -17,6 +17,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlElementDecl;
 import java.io.PrintStream;
 import java.util.Scanner;
 
@@ -94,7 +95,13 @@ public class Client {
             execute();
             break;
           default:
-            println("Invalid statements!");
+            String command = msg.trim();
+            if (isCommand(command)) {
+              executeCommand(command);
+            }
+            else {
+              println("Invalid statements!");
+            }
             break;
         }
         long endTime = System.currentTimeMillis();
@@ -107,6 +114,12 @@ public class Client {
     } catch (TTransportException e) {
       logger.error(e.getMessage());
     }
+  }
+
+  private static boolean isCommand(String command) {
+    return command.startsWith(Global.CREATE_DATABASE)||command.startsWith(Global.DROP_DATABASE)||command.startsWith(Global.SHOW_DATABASES)||command.startsWith(Global.USE)||
+            command.startsWith(Global.CREATE_TABLE)||command.startsWith(Global.DROP_TABLE)||command.startsWith(Global.SHOW_DATABASE)||command.startsWith(Global.SHOW_TABLE)||
+            command.startsWith(Global.INSERT_INTO)||command.startsWith(Global.DELETE_FROM)||command.startsWith(Global.UPDATE)||command.startsWith(Global.SELECT);
   }
 
   private static void getTime() {
@@ -189,6 +202,33 @@ public class Client {
     println("Please enter executable expression:");
     String expression = SCANNER.nextLine();
     ExecuteStatementReq req = new ExecuteStatementReq(sessionId, expression);
+    try{
+      ExecuteStatementResp resp = client.executeStatement(req);
+      if(resp.status.code == Global.SUCCESS_CODE){
+        println("Execution Succeeded.");
+        println(resp.status.msg);
+        if(resp.columnsList!=null){
+          for(int i=0;i<resp.columnsList.size();i++){
+            print(resp.columnsList.get(i)+" | ");
+          }
+          print("\n--------------------\n");
+          for(int i=0;i<resp.rowList.size();i++){
+            println(resp.rowList.get(i).get(0));
+          }
+        }
+      }
+      else{
+        println("Execution Failed.");
+        println(resp.status.msg);
+      }
+    }catch (RPCException e){
+      println(e.getMsg());
+    }catch (TException e){
+      logger.error(e.getMessage());
+    }
+  }
+  public static void executeCommand(String msg){
+    ExecuteStatementReq req = new ExecuteStatementReq(sessionId, msg);
     try{
       ExecuteStatementResp resp = client.executeStatement(req);
       if(resp.status.code == Global.SUCCESS_CODE){
