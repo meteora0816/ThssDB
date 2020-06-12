@@ -2,6 +2,7 @@ package cn.edu.thssdb.client;
 
 import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.utils.Global;
+import javafx.util.Pair;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -80,13 +81,8 @@ public class Client {
             withdraw();
             break;
           case Global.CONN:
-            println("Please enter your username:");
-            print(Global.CLI_PREFIX);
-            String usr = SCANNER.nextLine().trim();
-            println("Please enter your password:");
-            print(Global.CLI_PREFIX);
-            String psw = SCANNER.nextLine().trim();
-            connect(usr, psw);
+            Pair<String, String> pair = getUsrPsw();
+            connect(pair.getKey(), pair.getValue());
             break;
           case Global.DISC:
             disconnect(sessionId);
@@ -156,6 +152,18 @@ public class Client {
   }
 
   // real connect
+  private static Pair<String, String> getUsrPsw() {
+    String usr, psw;
+    println("Please enter your username:");
+    // print(Global.CLI_PREFIX);
+    usr = SCANNER.nextLine();
+    println("Please enter your password:");
+    // print(Global.CLI_PREFIX);
+    psw = SCANNER.nextLine();
+    Pair<String, String> pair = new Pair<>(usr, psw);
+    return pair;
+  }
+
   private static void connect(String username, String password){
     println("Connecting to database...");
     ConnectReq req = new ConnectReq(username, password);
@@ -177,6 +185,7 @@ public class Client {
       println("You have already logged in.");
     }
   }
+
   // real disconnect
   private static void disconnect(long SessionId){
     DisconnectReq req = new DisconnectReq(SessionId);
