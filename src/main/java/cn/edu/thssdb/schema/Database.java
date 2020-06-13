@@ -29,13 +29,13 @@ public class Database {
     this.modified = new HashMap<>();
 
     this.lock = new ReentrantReadWriteLock();
+    this.dbLogger = new DBLogger(name);
 
     File DBmeta = new File(this.DBdir + "/" + this.name + ".meta");
     File DB = new File(this.DBdir);
     if (!DB.exists()) {
       DB.mkdir();
       DBmeta.createNewFile();
-      this.dbLogger = new DBLogger(name);
     }
     else {
       recover(DBmeta);

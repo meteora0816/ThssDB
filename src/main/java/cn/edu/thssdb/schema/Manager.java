@@ -136,7 +136,7 @@ public class Manager {
         return ret.toString();
     }
 
-    public void appendLog(String str, int tnum){
+    public void appendLog(String str, int tnum) {
         currentLogger.append(str, tnum);
     }
 
