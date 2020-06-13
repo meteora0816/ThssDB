@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SQLExecListener extends SQLBaseListener {
     private Manager manager;
@@ -23,13 +25,15 @@ public class SQLExecListener extends SQLBaseListener {
     private boolean success = true;
     private boolean autoCommit;
     private String command;
+    private int tnum; // transaction
 
-    public SQLExecListener(Manager mng, boolean ac, String cmd) {
+    public SQLExecListener(Manager mng, boolean ac, String cmd, int tn) {
         super();
         manager = mng;
         // manager.recover();
         autoCommit = ac;
         command = cmd;
+        tnum = tn;
     }
 
     @Override
@@ -1365,9 +1369,25 @@ public class SQLExecListener extends SQLBaseListener {
 
     @Override
     public void exitParse(SQLParser.ParseContext ctx) {
-        if (!(command.startsWith(Global.SHOW_DATABASES)||command.startsWith(Global.CREATE_DATABASE)||command.startsWith(Global.USE)))
-            manager.appendLog(command);
-        manager.quit();
+        Pattern create_db = Pattern.compile(Global.CREATE_DATABASE);
+        Pattern drop_db = Pattern.compile(Global.DROP_DATABASE);
+        Pattern show_dbs = Pattern.compile(Global.SHOW_DATABASES);
+        Pattern use = Pattern.compile(Global.USE);
+        Pattern show_db = Pattern.compile(Global.SHOW_DATABASE);
+        Pattern show_table = Pattern.compile(Global.SHOW_TABLE);
+
+        Matcher create_db_match = create_db.matcher(command);
+        Matcher drop_db_match = drop_db.matcher(command);
+        Matcher show_dbs_match = show_dbs.matcher(command);
+        Matcher use_match = use.matcher(command);
+        Matcher show_db_match = show_db.matcher(command);
+        Matcher show_table_match = show_table.matcher(command);
+
+        if (!(create_db_match.matches()||drop_db_match.matches()||show_dbs_match.matches()||use_match.matches()||
+                show_db_match.matches()||show_table_match.matches()))
+            manager.appendLog(command, tnum);
+
+        if (autoCommit) manager.quit();
     }
 
 

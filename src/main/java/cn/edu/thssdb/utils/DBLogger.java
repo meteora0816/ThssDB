@@ -21,11 +21,11 @@ public class DBLogger {
         }
     }
 
-    public void append(String str) {
+    public void append(String str, int num) {
 
         try {
             FileWriter writer = new FileWriter(logPath, true);
-            writer.write(str);
+            writer.write(num + " " + str);
             writer.write("\n");
             writer.close();
         } catch (IOException e) {

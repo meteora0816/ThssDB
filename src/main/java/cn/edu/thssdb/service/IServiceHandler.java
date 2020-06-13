@@ -29,6 +29,7 @@ public class IServiceHandler implements IService.Iface {
   public long sessionCnt = 0;
   private boolean autoCommit = true;
   private Manager manager;
+  private int tnum = 0;
 
   private static final String toMD5(String pwd){
     String ret = "";
@@ -150,7 +151,7 @@ public class IServiceHandler implements IService.Iface {
         ParseTree tree = parser.parse();
         ParseTreeWalker walker = new ParseTreeWalker();
 
-        SQLExecListener listener = new SQLExecListener(manager, autoCommit, charStream.toString());
+        SQLExecListener listener = new SQLExecListener(manager, autoCommit, charStream.toString(), tnum);
 
         walker.walk(listener,tree);
 
@@ -175,6 +176,8 @@ public class IServiceHandler implements IService.Iface {
   public startTransactionResp startTransaction(startTransactionReq req) {
     startTransactionResp resp = new startTransactionResp();
     autoCommit = false;
+    tnum = (int) (((int)((Math.random()*9+1)*10000) + sessionCnt*100000) % 10000000);
+    manager.appendLog("begin;", tnum);
     resp.setStatus(new Status(Global.SUCCESS_CODE));
     return resp;
   }
@@ -182,8 +185,10 @@ public class IServiceHandler implements IService.Iface {
   @Override
   public commitResp commit(commitReq req) {
     commitResp resp = new commitResp();
+    manager.appendLog("commit;", tnum);
     manager.quit();
     autoCommit = true;
+    tnum = 0;
     resp.setStatus(new Status(Global.SUCCESS_CODE));
     return resp;
   }

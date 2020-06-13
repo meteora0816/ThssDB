@@ -132,6 +132,9 @@ public class Database {
     File metaFile = new File(this.DBdir + "/" + this.name + ".meta");
     System.gc();
     metaFile.delete();
+    File logFile = new File(this.DBdir + "/" + this.name + ".log");
+    System.gc();
+    logFile.delete();
     File dir = new File(this.DBdir);
     System.gc();
     dir.delete();

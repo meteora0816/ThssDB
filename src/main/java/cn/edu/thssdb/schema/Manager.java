@@ -133,8 +133,8 @@ public class Manager {
         return ret.toString();
     }
 
-    public void appendLog(String str){
-        currentLogger.append(str);
+    public void appendLog(String str, int tnum){
+        currentLogger.append(str, tnum);
     }
 
     public void clearLog(String str){
