@@ -521,6 +521,7 @@ public class SQLExecListener extends SQLBaseListener {
                 }
             }
         }
+        // System.out.println(Arrays.toString(resultColumns.toArray()));
         // 再解析从哪些表中选择
         boolean isSingleTable = false; //单表查询
         String leftTableName = "";
@@ -682,14 +683,16 @@ public class SQLExecListener extends SQLBaseListener {
                 resp.rowList = new ArrayList<>();
                 ArrayList<Integer> attrIndices = new ArrayList<>();
                 //resp.columnsList.addAll(resultColumns);
+                System.out.println(Arrays.toString(columns.toArray()));
                 for(int i=0;i<columns.size();i++){
                     if(resultColumns.contains(columns.get(i).name())){
                         attrIndices.add(i);
                     }
                 }
+                // System.out.println(Arrays.toString(attrIndices.toArray()));
                 //这一步不多余，否则输出的表可能表头与内容不匹配
                 for(int i=0;i<attrIndices.size();i++){
-                    resp.columnsList.add(columns.get(i).name());
+                    resp.columnsList.add(columns.get(attrIndices.get(i)).name());
                 }
                 if(whereAttrName==null){
                     //没有选择条件
@@ -722,9 +725,11 @@ public class SQLExecListener extends SQLBaseListener {
                                     StringBuilder partRow = new StringBuilder();
                                     for (int i = 0; i < attrIndices.size() - 1; i++) {
                                         int index = attrIndices.get(i);
+                                        System.out.println(index);
+                                        System.out.println(Arrays.toString(currentRow.getEntries().toArray()));
                                         partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
                                     }
-                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    partRow.append(currentRow.getEntries().get(attrIndices.get(attrIndices.size()-1)).toString());
                                     tmpRow.add(partRow.toString());
                                     resp.rowList.add(tmpRow);
                                 }
@@ -739,7 +744,7 @@ public class SQLExecListener extends SQLBaseListener {
                                         int index = attrIndices.get(i);
                                         partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
                                     }
-                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    partRow.append(currentRow.getEntries().get(attrIndices.get(attrIndices.size()-1)).toString());
                                     tmpRow.add(partRow.toString());
                                     resp.rowList.add(tmpRow);
                                 }
@@ -754,7 +759,7 @@ public class SQLExecListener extends SQLBaseListener {
                                         int index = attrIndices.get(i);
                                         partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
                                     }
-                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    partRow.append(currentRow.getEntries().get(attrIndices.get(attrIndices.size()-1)).toString());
                                     tmpRow.add(partRow.toString());
                                     resp.rowList.add(tmpRow);
                                 }
@@ -769,7 +774,7 @@ public class SQLExecListener extends SQLBaseListener {
                                         int index = attrIndices.get(i);
                                         partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
                                     }
-                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    partRow.append(currentRow.getEntries().get(attrIndices.get(attrIndices.size()-1)).toString());
                                     tmpRow.add(partRow.toString());
                                     resp.rowList.add(tmpRow);
                                 }
@@ -784,7 +789,7 @@ public class SQLExecListener extends SQLBaseListener {
                                         int index = attrIndices.get(i);
                                         partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
                                     }
-                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    partRow.append(currentRow.getEntries().get(attrIndices.get(attrIndices.size()-1)).toString());
                                     tmpRow.add(partRow.toString());
                                     resp.rowList.add(tmpRow);
                                 }
@@ -799,7 +804,7 @@ public class SQLExecListener extends SQLBaseListener {
                                         int index = attrIndices.get(i);
                                         partRow.append(currentRow.getEntries().get(index).toString()).append(", ");
                                     }
-                                    partRow.append(currentRow.getEntries().get(attrIndices.size() - 1).toString());
+                                    partRow.append(currentRow.getEntries().get(attrIndices.get(attrIndices.size()-1)).toString());
                                     tmpRow.add(partRow.toString());
                                     resp.rowList.add(tmpRow);
                                 }
@@ -1210,7 +1215,7 @@ public class SQLExecListener extends SQLBaseListener {
                                     }
                                         currentRow
                                                 .append(tmpLeftRow.getEntries()
-                                                        .get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                                        .get(leftAttrIndices.get(leftAttrIndices.get(leftAttrIndices.size()-1))).toString());
                                     }
                                     if (!rightAttrIndices.isEmpty()) {
                                         currentRow.append(", ");
@@ -1221,7 +1226,7 @@ public class SQLExecListener extends SQLBaseListener {
                                     }
                                         currentRow
                                                 .append(tmpRightRow.getEntries()
-                                                        .get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                                        .get(rightAttrIndices.get(rightAttrIndices.get(rightAttrIndices.size()-1))).toString());
                                     }
                                     ArrayList<String> tmpRow = new ArrayList<>();
                                     tmpRow.add(currentRow.toString());
