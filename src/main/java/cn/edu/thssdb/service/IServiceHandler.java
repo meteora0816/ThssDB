@@ -2,8 +2,10 @@ package cn.edu.thssdb.service;
 
 import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.schema.Manager;
+import cn.edu.thssdb.utils.DBLogger;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.parser.*;
+import org.antlr.v4.runtime.RecognitionException;
 import org.apache.thrift.TException;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -27,6 +29,7 @@ public class IServiceHandler implements IService.Iface {
   public long sessionCnt = 0;
   private boolean autoCommit = true;
   private Manager manager;
+  private int tnum = 0;
 
   private static final String toMD5(String pwd){
     String ret = "";
@@ -127,7 +130,6 @@ public class IServiceHandler implements IService.Iface {
 
   @Override
   public ExecuteStatementResp executeStatement(ExecuteStatementReq req) throws RPCException, TException {
-    // TODO
     /*
     需要根据具体数据库操作实现。已经实现：创建/切换数据库，删除数据库，创建表，删除表, 显示表信息，
     显示所有数据库，显示数据库信息，插入行，删除行，更新行，单表有/无条件全部行/部分行查询
@@ -139,19 +141,28 @@ public class IServiceHandler implements IService.Iface {
       String statement = req.statement;
       System.out.println(statement);
 
-      CodePointCharStream charStream = CharStreams.fromString(statement);
-      //System.out.println(charStream.toString());
+      try {
+        CodePointCharStream charStream = CharStreams.fromString(statement);
+        //System.out.println(charStream.toString());
 
-      SQLLexer lexer = new SQLLexer(charStream);
-      CommonTokenStream tokens = new CommonTokenStream(lexer);
-      SQLParser parser = new SQLParser(tokens);
-      ParseTree tree = parser.parse();
-      // System.out.println(tree.toStringTree(parser));
-      ParseTreeWalker walker = new ParseTreeWalker();
-      SQLExecListener listener = new SQLExecListener(manager, autoCommit);
+        SQLLexer lexer = new SQLLexer(charStream);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        SQLParser parser = new SQLParser(tokens);
+        ParseTree tree = parser.parse();
+        ParseTreeWalker walker = new ParseTreeWalker();
 
-      walker.walk(listener,tree);
-      resp = listener.getResult();
+        SQLExecListener listener = new SQLExecListener(manager, autoCommit, charStream.toString(), tnum);
+
+        walker.walk(listener,tree);
+
+        resp = listener.getResult();
+      } catch(Exception e) {
+        e.printStackTrace();
+        Status status = new Status(Global.FAILURE_CODE);
+        status.setMsg("Opration failed.");
+        resp.setStatus(status);
+      }
+
     }
     else{
       Status status = new Status(Global.FAILURE_CODE);
@@ -165,6 +176,8 @@ public class IServiceHandler implements IService.Iface {
   public startTransactionResp startTransaction(startTransactionReq req) {
     startTransactionResp resp = new startTransactionResp();
     autoCommit = false;
+    tnum = (int) (((int)((Math.random()*9+1)*10000) + sessionCnt*100000) % 10000000);
+    manager.appendLog("begin;", tnum);
     resp.setStatus(new Status(Global.SUCCESS_CODE));
     return resp;
   }
@@ -172,8 +185,10 @@ public class IServiceHandler implements IService.Iface {
   @Override
   public commitResp commit(commitReq req) {
     commitResp resp = new commitResp();
+    manager.appendLog("commit;", tnum);
     manager.quit();
     autoCommit = true;
+    tnum = 0;
     resp.setStatus(new Status(Global.SUCCESS_CODE));
     return resp;
   }

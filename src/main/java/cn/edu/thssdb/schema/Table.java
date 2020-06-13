@@ -193,6 +193,7 @@ public class Table implements Iterable<Row>, Serializable {
     // 删除文件
     File file = new File(this.tableDir);
     File[] files = file.listFiles();
+    System.gc();
     for (int i=0;i<files.length;i++) {
       files[i].delete();
     }

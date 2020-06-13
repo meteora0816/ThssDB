@@ -1,6 +1,7 @@
 package cn.edu.thssdb.schema;
 
 import cn.edu.thssdb.server.ThssDB;
+import cn.edu.thssdb.utils.DBLogger;
 
 import javax.xml.crypto.Data;
 import java.io.*;
@@ -10,6 +11,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Manager {
     private HashMap<String, Database> databases;
     private Database currentDB;
+    private DBLogger currentLogger;
     private String baseDir = "data";
     private String metaFile = "DB.meta";
     private static ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -19,6 +21,7 @@ public class Manager {
     }
 
     public Manager() throws IOException {
+        System.out.println("get new manager");
         databases = new HashMap<>();
 
         File DBDir = new File(baseDir);
@@ -35,6 +38,7 @@ public class Manager {
     private Database createDatabaseIfNotExists(String name) throws IOException {
         Database newDB = new Database(baseDir, name);
         databases.put(name, newDB);
+        this.quit();
         return newDB;
     }
 
@@ -60,12 +64,15 @@ public class Manager {
         if (currentDB != null) {
             currentDB.quit();
         }
+
         if (databases.containsKey(name)) {
             currentDB = databases.get(name);
+            currentLogger = currentDB.dbLogger;
         }
         else {
             currentDB = createDatabaseIfNotExists(name);
             databases.put(name, currentDB);
+            currentLogger = currentDB.dbLogger;
         }
     }
 
@@ -74,6 +81,7 @@ public class Manager {
     }
 
     public void quit() {
+        System.out.println("manager quit!");
         for (String key : this.databases.keySet()) {
             this.databases.get(key).quit();
         }
@@ -123,6 +131,14 @@ public class Manager {
             ret.append(dbName).append("\n");
         }
         return ret.toString();
+    }
+
+    public void appendLog(String str, int tnum){
+        currentLogger.append(str, tnum);
+    }
+
+    public void clearLog(String str){
+        currentLogger.clear(str);
     }
 
     private static class ManagerHolder {
