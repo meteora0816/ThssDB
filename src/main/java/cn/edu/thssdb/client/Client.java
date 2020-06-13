@@ -90,6 +90,12 @@ public class Client {
           case Global.EXEC:
             execute();
             break;
+          case Global.TRANSACTION:
+            transaction();
+            break;
+          case Global.COMMIT:
+            commit();
+            break;
           default:
             String command = msg.trim();
             if (isCommand(command)) {
@@ -236,6 +242,25 @@ public class Client {
       logger.error(e.getMessage());
     }
   }
+
+  public static void transaction(){
+    startTransactionReq req = new startTransactionReq();
+    try {
+      client.startTransaction(req);
+    } catch (TException e) {
+      logger.error(e.getMessage());
+    }
+  }
+
+  public static void commit() {
+    commitReq req = new commitReq();
+    try {
+      client.commit(req);
+    } catch (TException e) {
+      logger.error(e.getMessage());
+    }
+  }
+
   public static void executeCommand(String msg){
     ExecuteStatementReq req = new ExecuteStatementReq(sessionId, msg);
     try{

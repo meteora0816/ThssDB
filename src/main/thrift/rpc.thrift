@@ -63,6 +63,21 @@ struct ExecuteStatementResp{
   5: optional list<list<string>> rowList
 }
 
+struct startTransactionReq{
+}
+
+struct startTransactionResp{
+  1: required Status status
+}
+
+struct commitReq{
+}
+
+struct commitResp{
+  1: required Status status
+}
+
+
 exception RPCException{
   1: required string msg;
 }
@@ -75,4 +90,6 @@ service IService {
   // DisconnetResp disconnect(1: DisconnetResp req);
   DisconnectResp disconnect(1:DisconnectReq req)throws(1:RPCException e);
   ExecuteStatementResp executeStatement(1: ExecuteStatementReq req)throws(1:RPCException e);
+  startTransactionResp startTransaction(1: startTransactionReq req);
+  commitResp commit(1: commitReq req);
 }

@@ -21,16 +21,24 @@ public class SQLExecListener extends SQLBaseListener {
     private ExecuteStatementResp resp = new ExecuteStatementResp();
     private Status status = new Status();
     private boolean success = true;
+    private boolean autoCommit;
+
+    public SQLExecListener(Manager mng, boolean ac) {
+        super();
+        manager = mng;
+        manager.recover();
+        autoCommit = ac;
+    }
 
     @Override
     public void enterParse(SQLParser.ParseContext ctx){
         status.setMsg("\n");
-        try {
-            manager = new Manager();
-            manager.switchDatabase("public");
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+//        try {
+//            manager = new Manager();
+//            manager.switchDatabase("public");
+//        }catch (IOException e){
+//            e.printStackTrace();
+//        }
     }
 
     @Override
@@ -1355,7 +1363,7 @@ public class SQLExecListener extends SQLBaseListener {
 
     @Override
     public void exitParse(SQLParser.ParseContext ctx) {
-        manager.quit();
+        if (autoCommit) manager.quit();
     }
 
 

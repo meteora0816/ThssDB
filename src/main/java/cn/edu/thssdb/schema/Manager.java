@@ -95,7 +95,7 @@ public class Manager {
         }
     }
 
-    private void recover() {
+    public void recover() {
         System.out.println("Recover all databases...");
         try {
             File file = new File(this.baseDir + "/" + this.metaFile);

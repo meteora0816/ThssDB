@@ -4,8 +4,15 @@ import cn.edu.thssdb.rpc.thrift.IService;
 import cn.edu.thssdb.schema.Manager;
 import cn.edu.thssdb.service.IServiceHandler;
 import cn.edu.thssdb.utils.Global;
+import com.sun.corba.se.spi.activation.Server;
+import org.apache.thrift.TProcessor;
+import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.server.TNonblockingServer;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
@@ -26,7 +33,7 @@ public class ThssDB {
     return ThssDBHolder.INSTANCE;
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws TTransportException {
     ThssDB server = ThssDB.getInstance();
     server.start();
   }

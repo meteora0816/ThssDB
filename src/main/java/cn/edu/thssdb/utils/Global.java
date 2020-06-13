@@ -17,6 +17,8 @@ public class Global {
   public static final String RSTR = "register;";
   public static final String EXEC = "execute;";
   public static final String WDRW = "withdraw;";
+  public static final String TRANSACTION = "begin transaction;";
+  public static final String COMMIT = "commit;";
 
   public static final String CREATE_DATABASE = "create database";
   public static final String DROP_DATABASE = "drop database";

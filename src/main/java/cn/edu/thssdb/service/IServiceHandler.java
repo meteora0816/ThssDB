@@ -1,6 +1,7 @@
 package cn.edu.thssdb.service;
 
 import cn.edu.thssdb.rpc.thrift.*;
+import cn.edu.thssdb.schema.Manager;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.parser.*;
 import org.apache.thrift.TException;
@@ -24,6 +25,8 @@ public class IServiceHandler implements IService.Iface {
   ArrayList<String> pwds = new ArrayList<>();
   ArrayList<Long> sessionIds = new ArrayList<>();
   public long sessionCnt = 0;
+  private boolean autoCommit = true;
+  private Manager manager;
 
   private static final String toMD5(String pwd){
     String ret = "";
@@ -84,6 +87,12 @@ public class IServiceHandler implements IService.Iface {
         sessionIds.add(sessionCnt);  //add session to pool
         resp.setSessionId(sessionCnt);
         sessionCnt++;
+        try {
+          manager = new Manager();
+          manager.switchDatabase("public");
+        }catch (IOException e){
+          e.printStackTrace();
+        }
       }
       else{
         resp.setStatus(new Status(Global.FAILURE_CODE));
@@ -106,6 +115,7 @@ public class IServiceHandler implements IService.Iface {
     long sessionId = req.sessionId;
     if(sessionIds.contains(sessionId)){
       sessionIds.remove(sessionId);
+      manager.quit();
       resp.setStatus(new Status(Global.SUCCESS_CODE));
     }
     else{
@@ -138,7 +148,7 @@ public class IServiceHandler implements IService.Iface {
       ParseTree tree = parser.parse();
       // System.out.println(tree.toStringTree(parser));
       ParseTreeWalker walker = new ParseTreeWalker();
-      SQLExecListener listener = new SQLExecListener();
+      SQLExecListener listener = new SQLExecListener(manager, autoCommit);
 
       walker.walk(listener,tree);
       resp = listener.getResult();
@@ -151,11 +161,22 @@ public class IServiceHandler implements IService.Iface {
     return resp;
   }
 
-//  public ExecuteStatementResp createDatabase(createDatabaseReq req) {
-//    ExecuteStatementResp resp = new ExecuteStatementResp();
-//
-//    return resp;
-//  }
+  @Override
+  public startTransactionResp startTransaction(startTransactionReq req) {
+    startTransactionResp resp = new startTransactionResp();
+    autoCommit = false;
+    resp.setStatus(new Status(Global.SUCCESS_CODE));
+    return resp;
+  }
+
+  @Override
+  public commitResp commit(commitReq req) {
+    commitResp resp = new commitResp();
+    manager.quit();
+    autoCommit = true;
+    resp.setStatus(new Status(Global.SUCCESS_CODE));
+    return resp;
+  }
 
   @Override
   public RegisterResp registNew(RegisterReq req) throws RPCException, TException{
