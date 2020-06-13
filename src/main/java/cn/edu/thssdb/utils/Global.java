@@ -20,18 +20,18 @@ public class Global {
   public static final String TRANSACTION = "begin transaction;";
   public static final String COMMIT = "commit;";
 
-  public static final String CREATE_DATABASE = "create database";
-  public static final String DROP_DATABASE = "drop database";
-  public static final String SHOW_DATABASES = "show databases";
-  public static final String USE = "use";
-  public static final String CREATE_TABLE = "create table";
-  public static final String DROP_TABLE = "drop table";
-  public static final String SHOW_DATABASE = "show database";
-  public static final String SHOW_TABLE = "show table";
-  public static final String INSERT_INTO = "insert into";
-  public static final String DELETE_FROM = "delete from";
-  public static final String UPDATE = "update";
-  public static final String SELECT = "select";
+  public static final String CREATE_DATABASE = "[Cc][Re][Ee][Aa][Tt][Ee](\\s)+[Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee].*";
+  public static final String DROP_DATABASE = "[Dd][Rr][Oo][Pp](\\s)+[Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee].*";
+  public static final String SHOW_DATABASES = "[Ss][Hh][Oo][Ww](\\s)+[Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee][Ss].*";
+  public static final String USE = "[Uu][Ss][Ee].*";
+  public static final String CREATE_TABLE = "[Cc][Rr][Ee][Aa][Tt][Ee](\\s)+[Tt][Aa][Bb][Ll][Ee].*";
+  public static final String DROP_TABLE = "[Dd][Rr][Oo][Pp](\\s)+[Tt][Aa][Bb][Ll][Ee].*";
+  public static final String SHOW_DATABASE = "[Ss][Hh][Oo][Ww](\\s)+[Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee].*";
+  public static final String SHOW_TABLE = "[Ss][Hh][Oo][Ww](\\s)+[Tt][Aa][Bb][Ll][Ee].*";
+  public static final String INSERT_INTO = "[Ii][Nn][Ss][Ee][Rr][Tt](\\s)+[Ii][Nn][Tt][Oo].*";
+  public static final String DELETE_FROM = "[Dd][Ee][Ll][Ee][Tt][Ee](\\s)+[Ff][Rr][Oo][Mm].*";
+  public static final String UPDATE = "[Uu][Pp][Dd][Aa][Tt][Ee].*";
+  public static final String SELECT = "[Ss][Ee][Ll][Ee][Cc][Tt].*";
 
   public static final String S_URL_INTERNAL = "jdbc:default:connection";
 }
