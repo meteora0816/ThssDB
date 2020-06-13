@@ -107,7 +107,7 @@ public class Table implements Iterable<Row>, Serializable {
     }
   }
 
-  public void insert(Row row) throws NDException {
+  public void insert(Row row) throws NDException, DuplicateKeyException {
     int n = row.entries.size();
     System.out.println(Arrays.toString(row.entries.toArray()));
     // check null
@@ -123,7 +123,7 @@ public class Table implements Iterable<Row>, Serializable {
       try {
         this.index.put(row.entries.get(this.primaryIndex), row);
       } catch (DuplicateKeyException e) {
-        e.printStackTrace();
+        throw e;
       }
 
     }

@@ -159,7 +159,6 @@ public class IServiceHandler implements IService.Iface {
       } catch(Exception e) {
         e.printStackTrace();
         Status status = new Status(Global.FAILURE_CODE);
-        status.setMsg("Opration failed.");
         resp.setStatus(status);
       }
 

@@ -1,5 +1,6 @@
 package cn.edu.thssdb.parser;
 
+import cn.edu.thssdb.exception.DuplicateKeyException;
 import cn.edu.thssdb.rpc.thrift.Status;
 import cn.edu.thssdb.schema.*;
 import cn.edu.thssdb.rpc.thrift.ExecuteStatementResp;
@@ -271,9 +272,12 @@ public class SQLExecListener extends SQLBaseListener {
 
         try {
             currentTable.insert(insertRow);
-        }catch(Exception e){
+        }catch (NullPointerException | NDException e){
             success = false;
-            status.msg+="Some of your insert values cannot be null";
+            status.msg += "Some of your insert values cannot be null.";
+        }catch (DuplicateKeyException e){
+            success = false;
+            status.msg += "Record already exists.";
         }
     }
 
