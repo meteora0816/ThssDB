@@ -87,9 +87,9 @@ public class Client {
           case Global.DISC:
             disconnect(sessionId);
             break;
-          case Global.EXEC:
-            execute();
-            break;
+//          case Global.EXEC:
+//            execute();
+//            break;
           case Global.TRANSACTION:
             transaction();
             break;
@@ -213,35 +213,35 @@ public class Client {
     }
   }
 
-  public static void execute(){
-    println("Please enter executable expression:");
-    String expression = SCANNER.nextLine();
-    ExecuteStatementReq req = new ExecuteStatementReq(sessionId, expression);
-    try{
-      ExecuteStatementResp resp = client.executeStatement(req);
-      if(resp.status.code == Global.SUCCESS_CODE){
-        println("Execution Succeeded.");
-        println(resp.status.msg);
-        if(resp.columnsList!=null){
-          for(int i=0;i<resp.columnsList.size();i++){
-            print(resp.columnsList.get(i)+" | ");
-          }
-          print("\n--------------------\n");
-          for(int i=0;i<resp.rowList.size();i++){
-            println(resp.rowList.get(i).get(0));
-          }
-        }
-      }
-      else{
-        println("Execution Failed.");
-        println(resp.status.msg);
-      }
-    }catch (RPCException e){
-      println(e.getMsg());
-    }catch (TException e){
-      logger.error(e.getMessage());
-    }
-  }
+//  public static void execute(){
+//    println("Please enter executable expression:");
+//    String expression = SCANNER.nextLine();
+//    ExecuteStatementReq req = new ExecuteStatementReq(sessionId, expression);
+//    try{
+//      ExecuteStatementResp resp = client.executeStatement(req);
+//      if(resp.status.code == Global.SUCCESS_CODE){
+//        println("Execution Succeeded.");
+//        println(resp.status.msg);
+//        if(resp.columnsList!=null){
+//          for(int i=0;i<resp.columnsList.size();i++){
+//            print(resp.columnsList.get(i)+" | ");
+//          }
+//          print("\n--------------------\n");
+//          for(int i=0;i<resp.rowList.size();i++){
+//            println(resp.rowList.get(i).get(0));
+//          }
+//        }
+//      }
+//      else{
+//        println("Execution Failed.");
+//        println(resp.status.msg);
+//      }
+//    }catch (RPCException e){
+//      println(e.getMsg());
+//    }catch (TException e){
+//      logger.error(e.getMessage());
+//    }
+//  }
 
   public static void transaction(){
     startTransactionReq req = new startTransactionReq();
