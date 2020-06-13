@@ -205,6 +205,12 @@ public class SQLExecListener extends SQLBaseListener {
     @Override
     public void exitInsert_stmt(SQLParser.Insert_stmtContext ctx) {
         String tableName = ctx.table_name().getText();
+        if(!manager.getCurrentDB().containsTable(tableName)){
+            success = false;
+
+            status.msg+="Table "+tableName+" does not exit";
+            return;
+        }
         List<SQLParser.Column_nameContext> column_nameContexts = ctx.column_name();
         int numOfColumn = column_nameContexts.size();
         String[] columnNames = new String[numOfColumn];
@@ -259,15 +265,21 @@ public class SQLExecListener extends SQLBaseListener {
 
         try {
             currentTable.insert(insertRow);
-        }catch(NDException e){
+        }catch(Exception e){
             success = false;
-            status.msg+="Some of your insert values cannot be null.\n";
+            status.msg+="Some of your insert values cannot be null";
         }
     }
 
     @Override
     public void exitDelete_stmt(SQLParser.Delete_stmtContext ctx) {
         String tableName = ctx.table_name().getText();
+        if(!manager.getCurrentDB().containsTable(tableName)){
+            success = false;
+
+            status.msg+="Table "+tableName+" does not exit";
+            return;
+        }
         Table currentTable = manager.getCurrentDB().getTable(tableName);
         String comparator = ctx.multiple_condition().condition().comparator().getText();
         System.out.println(comparator);
@@ -353,6 +365,12 @@ public class SQLExecListener extends SQLBaseListener {
     public void exitUpdate_stmt(SQLParser.Update_stmtContext ctx) {
         // 更新哪个表
         String tableName = ctx.table_name().getText();
+        if(!manager.getCurrentDB().containsTable(tableName)){
+            success = false;
+
+            status.msg+="Table "+tableName+" does not exit";
+            return;
+        }
         System.out.println(tableName);
         // 更新哪一列
         String attrToBeUpdated = ctx.column_name().getText();
@@ -559,6 +577,12 @@ public class SQLExecListener extends SQLBaseListener {
         //System.out.println("operator: "+whereComparator);
         if(isSingleTable){
             // 单表查询
+            if(!manager.getCurrentDB().containsTable(leftTableName)){
+                success = false;
+
+                status.msg+="Table "+leftTableName+" does not exit";
+                return;
+            }
             Table currentTable = manager.getCurrentDB().getTable(leftTableName);
             ArrayList<Column> columns = currentTable.columns;
             if(selectAll){
@@ -786,6 +810,16 @@ public class SQLExecListener extends SQLBaseListener {
         else{
             //多表查询
             //先执行join
+            if(!manager.getCurrentDB().containsTable(leftTableName)){
+                success = false;
+                status.msg+="Table "+leftTableName+" does not exit";
+                return;
+            }
+            if(!manager.getCurrentDB().containsTable(rightTableName)){
+                success = false;
+                status.msg+="Table "+rightTableName+" does not exit";
+                return;
+            }
             Table leftTable = manager.getCurrentDB().getTable(leftTableName);
             Table rightTable = manager.getCurrentDB().getTable(rightTableName);
             ArrayList<Column> leftColumns = leftTable.columns;
@@ -1162,25 +1196,27 @@ public class SQLExecListener extends SQLBaseListener {
                                 }
                                 if (valid) {
                                     StringBuilder currentRow = new StringBuilder();
+                                    if(!leftAttrIndices.isEmpty()){
                                     for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
                                         currentRow
                                                 .append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString())
                                                 .append(", ");
                                     }
-                                    currentRow
-                                            .append(tmpLeftRow.getEntries()
-                                                    .get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                        currentRow
+                                                .append(tmpLeftRow.getEntries()
+                                                        .get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                    }
                                     if (!rightAttrIndices.isEmpty()) {
                                         currentRow.append(", ");
-                                    }
                                     for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
                                         currentRow
                                                 .append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString())
                                                 .append(", ");
                                     }
-                                    currentRow
-                                            .append(tmpRightRow.getEntries()
-                                                    .get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                        currentRow
+                                                .append(tmpRightRow.getEntries()
+                                                        .get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                    }
                                     ArrayList<String> tmpRow = new ArrayList<>();
                                     tmpRow.add(currentRow.toString());
                                     resp.rowList.add(tmpRow);
@@ -1203,17 +1239,19 @@ public class SQLExecListener extends SQLBaseListener {
                                 }
                                 if (valid) {
                                     StringBuilder currentRow = new StringBuilder();
+                                    if(!leftAttrIndices.isEmpty()){
                                     for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
                                         currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
                                     }
-                                    currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                    }
                                     if (!rightAttrIndices.isEmpty()) {
                                         currentRow.append(", ");
-                                    }
                                     for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
                                         currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
                                     }
-                                    currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                    }
                                     ArrayList<String> tmpRow = new ArrayList<>();
                                     tmpRow.add(currentRow.toString());
                                     resp.rowList.add(tmpRow);
@@ -1236,17 +1274,19 @@ public class SQLExecListener extends SQLBaseListener {
                                 }
                                 if (valid) {
                                     StringBuilder currentRow = new StringBuilder();
+                                    if(!leftAttrIndices.isEmpty()){
                                     for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
                                         currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
                                     }
-                                    currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                    }
                                     if (!rightAttrIndices.isEmpty()) {
                                         currentRow.append(", ");
+                                        for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
+                                            currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
+                                        }
+                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
                                     }
-                                    for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
-                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
-                                    }
-                                    currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
                                     ArrayList<String> tmpRow = new ArrayList<>();
                                     tmpRow.add(currentRow.toString());
                                     resp.rowList.add(tmpRow);
@@ -1269,17 +1309,19 @@ public class SQLExecListener extends SQLBaseListener {
                                 }
                                 if (valid) {
                                     StringBuilder currentRow = new StringBuilder();
+                                    if(!leftAttrIndices.isEmpty()){
                                     for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
                                         currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
                                     }
-                                    currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
+                                    }
                                     if (!rightAttrIndices.isEmpty()) {
                                         currentRow.append(", ");
+                                        for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
+                                            currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
+                                        }
+                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
                                     }
-                                    for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
-                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
-                                    }
-                                    currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
                                     ArrayList<String> tmpRow = new ArrayList<>();
                                     tmpRow.add(currentRow.toString());
                                     resp.rowList.add(tmpRow);
@@ -1302,17 +1344,19 @@ public class SQLExecListener extends SQLBaseListener {
                                 }
                                 if (valid) {
                                     StringBuilder currentRow = new StringBuilder();
-                                    for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
-                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
+                                    if(!leftAttrIndices.isEmpty()) {
+                                        for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
+                                            currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
+                                        }
+                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
                                     }
-                                    currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
                                     if (!rightAttrIndices.isEmpty()) {
                                         currentRow.append(", ");
+                                        for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
+                                            currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
+                                        }
+                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
                                     }
-                                    for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
-                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
-                                    }
-                                    currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
                                     ArrayList<String> tmpRow = new ArrayList<>();
                                     tmpRow.add(currentRow.toString());
                                     resp.rowList.add(tmpRow);
@@ -1335,17 +1379,19 @@ public class SQLExecListener extends SQLBaseListener {
                                 }
                                 if (valid) {
                                     StringBuilder currentRow = new StringBuilder();
-                                    for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
-                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
+                                    if(!leftAttrIndices.isEmpty()) {
+                                        for (int j = 0; j < leftAttrIndices.size() - 1; j++) {
+                                            currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(j)).toString()).append(", ");
+                                        }
+                                        currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
                                     }
-                                    currentRow.append(tmpLeftRow.getEntries().get(leftAttrIndices.get(leftAttrIndices.size() - 1)).toString());
                                     if (!rightAttrIndices.isEmpty()) {
                                         currentRow.append(", ");
-                                    }
                                     for (int j = 0; j < rightAttrIndices.size() - 1; j++) {
                                         currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(j)).toString()).append(", ");
                                     }
-                                    currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                        currentRow.append(tmpRightRow.getEntries().get(rightAttrIndices.get(rightAttrIndices.size() - 1)).toString());
+                                    }
                                     ArrayList<String> tmpRow = new ArrayList<>();
                                     tmpRow.add(currentRow.toString());
                                     resp.rowList.add(tmpRow);
