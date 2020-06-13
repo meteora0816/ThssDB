@@ -1,188 +1,412 @@
 package cn.edu.thssdb.client;
 
-import cn.edu.thssdb.rpc.thrift.ConnectReq;
-import cn.edu.thssdb.rpc.thrift.ConnectResp;
-import cn.edu.thssdb.rpc.thrift.DisconnectReq;
-import cn.edu.thssdb.rpc.thrift.DisconnectResp;
-import cn.edu.thssdb.rpc.thrift.ExecuteStatementReq;
-import cn.edu.thssdb.rpc.thrift.ExecuteStatementResp;
-import cn.edu.thssdb.rpc.thrift.IService;
+import cn.edu.thssdb.parser.SQLParser;
+import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.utils.Global;
+import javafx.util.Pair;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import javax.xml.bind.annotation.XmlElementDecl;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Client {
 
   private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
+  static final String HOST_ARGS = "h";
+  static final String HOST_NAME = "host";
+
+  static final String HELP_ARGS = "help";
+  static final String HELP_NAME = "help";
+
+  static final String PORT_ARGS = "p";
+  static final String PORT_NAME = "port";
+
   private static final PrintStream SCREEN_PRINTER = new PrintStream(System.out);
+  private static final Scanner SCANNER = new Scanner(System.in);
 
   private static TTransport transport;
   private static TProtocol protocol;
   private static IService.Client client;
+  private static CommandLine commandLine;
+
+  //session id
+  //record the status of connection
+  private static long sessionId = -1;
+
 
   public static void main(String[] args) {
+    commandLine = parseCmd(args);
+    if (commandLine.hasOption(HELP_ARGS)) {
+      showHelp();
+      return;
+    }
     try {
-      transport = new TSocket(Global.DEFAULT_SERVER_HOST, Global.DEFAULT_SERVER_PORT);
+      echoStarting();
+      String host = commandLine.getOptionValue(HOST_ARGS, Global.DEFAULT_SERVER_HOST);
+      int port = Integer.parseInt(commandLine.getOptionValue(PORT_ARGS, String.valueOf(Global.DEFAULT_SERVER_PORT)));
+      transport = new TSocket(host, port);
       transport.open();
       protocol = new TBinaryProtocol(transport);
       client = new IService.Client(protocol);
-
-      List<String> insertStatements = loadInsertStatements();
-
-      long sessionId = connect();
-      createDatabase(sessionId);
-      useDatabase(sessionId);
-      createTable(sessionId);
-      insertData(sessionId, insertStatements);
-      queryData(sessionId);
-      disconnect(sessionId);
-
+      boolean open = true;
+      while (true) {
+        print(Global.CLI_PREFIX);
+        String msg = SCANNER.nextLine();
+        long startTime = System.currentTimeMillis();
+        switch (msg.trim()) {
+          case Global.SHOW_TIME:
+            getTime();
+            break;
+          case Global.QUIT:
+            open = false;
+            break;
+          case Global.RSTR:
+            register();
+            break;
+          case Global.WDRW:
+            withdraw();
+            break;
+          case Global.CONN:
+            Pair<String, String> pair = getUsrPsw();
+            connect(pair.getKey(), pair.getValue());
+            break;
+          case Global.DISC:
+            disconnect(sessionId);
+            break;
+//          case Global.EXEC:
+//            execute();
+//            break;
+          case Global.TRANSACTION:
+            transaction();
+            break;
+          case Global.COMMIT:
+            commit();
+            break;
+          default:
+            String command = msg.trim();
+            if (isCommand(command)) {
+              executeCommand(command);
+            }
+            else {
+              println("Invalid statements!");
+            }
+            break;
+        }
+        long endTime = System.currentTimeMillis();
+        println("It costs " + (endTime - startTime) + " ms.");
+        if (!open) {
+          break;
+        }
+      }
       transport.close();
-    } catch (TException | IOException e) {
+    } catch (TTransportException e) {
       logger.error(e.getMessage());
     }
   }
 
-  private static List<String> loadInsertStatements() throws IOException {
-    List<String> statements = new ArrayList<>();
-    File file = new File("insert_into.sql");
-    if (file.exists() && file.isFile()){
-      FileInputStream fileInputStream = new FileInputStream(file);
-      InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-      BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-      String line;
-      while ((line = bufferedReader.readLine()) != null) {
-        statements.add(line);
-      }
-      bufferedReader.close();
-      inputStreamReader.close();
-      fileInputStream.close();
-    }
-    return statements;
+  private static boolean isCommand(String command) {
+    Pattern create_db = Pattern.compile(Global.CREATE_DATABASE);
+    Pattern drop_db = Pattern.compile(Global.DROP_DATABASE);
+    Pattern show_dbs = Pattern.compile(Global.SHOW_DATABASES);
+    Pattern use = Pattern.compile(Global.USE);
+    Pattern create_table = Pattern.compile(Global.CREATE_TABLE);
+    Pattern drop_table = Pattern.compile(Global.DROP_TABLE);
+    Pattern show_db = Pattern.compile(Global.SHOW_DATABASE);
+    Pattern show_table = Pattern.compile(Global.SHOW_TABLE);
+    Pattern insert_into = Pattern.compile(Global.INSERT_INTO);
+    Pattern delete_from = Pattern.compile(Global.DELETE_FROM);
+    Pattern update = Pattern.compile(Global.UPDATE);
+    Pattern select = Pattern.compile(Global.SELECT);
+
+    Matcher create_db_match = create_db.matcher(command);
+    Matcher drop_db_match = drop_db.matcher(command);
+    Matcher show_dbs_match = show_dbs.matcher(command);
+    Matcher use_match = use.matcher(command);
+    Matcher create_table_match = create_table.matcher(command);
+    Matcher drop_table_match = drop_table.matcher(command);
+    Matcher show_db_match = show_db.matcher(command);
+    Matcher show_table_match = show_table.matcher(command);
+    Matcher insert_into_match = insert_into.matcher(command);
+    Matcher delete_from_match = delete_from.matcher(command);
+    Matcher update_match = update.matcher(command);
+    Matcher select_match = select.matcher(command);
+
+    return create_db_match.matches()||drop_db_match.matches()||show_dbs_match.matches()||use_match.matches()||
+            create_table_match.matches()||drop_table_match.matches()||show_db_match.matches()||show_table_match.matches()||
+            insert_into_match.matches()||delete_from_match.matches()||update_match.matches()||select_match.matches();
   }
 
-  private static long connect() throws TException {
-    String username = "username";
-    String password = "password";
+  private static void getTime() {
+    GetTimeReq req = new GetTimeReq();
+    try {
+      println(client.getTime(req).getTime());
+    } catch (TException e) {
+      logger.error(e.getMessage());
+    }
+  }
+
+  private static void register(){
+    println("Begin to register.");
+    String usr;
+    String pwd;
+    println("Please enter your username:");
+    usr = SCANNER.nextLine();
+    println("Please enter your password:");
+    pwd = SCANNER.nextLine();
+    RegisterReq req = new RegisterReq(usr,pwd);
+    try{
+      RegisterResp resp = client.registNew(req);
+      if(resp.status.code == Global.SUCCESS_CODE){
+        println("Register success.");
+      }
+      else{
+        println("Register failed.");
+      }
+    }catch (RPCException e){
+      println(e.getMsg());
+    }catch (TException e){
+      logger.error(e.getMessage());
+    }
+  }
+
+  // real connect
+  private static Pair<String, String> getUsrPsw() {
+    String usr, psw;
+    println("Please enter your username:");
+    // print(Global.CLI_PREFIX);
+    usr = SCANNER.nextLine();
+    println("Please enter your password:");
+    // print(Global.CLI_PREFIX);
+    psw = SCANNER.nextLine();
+    Pair<String, String> pair = new Pair<>(usr, psw);
+    return pair;
+  }
+
+  private static void connect(String username, String password){
+    println("Connecting to database...");
     ConnectReq req = new ConnectReq(username, password);
-    ConnectResp resp = client.connect(req);
-    if (resp.getStatus().code == Global.SUCCESS_CODE) {
-      println("Connect Successfully!");
-    } else {
-      println("Connect Unsuccessfully!");
-    }
-    return resp.getSessionId();
-  }
-
-  private static void createDatabase(long sessionId) throws TException {
-    String statement = "create database test;";
-    ExecuteStatementReq req = new ExecuteStatementReq(sessionId, statement);
-    ExecuteStatementResp resp = client.executeStatement(req);
-    if (resp.getStatus().code == Global.SUCCESS_CODE) {
-      println("Create Database Successfully!");
-    } else {
-      println("Create Database Unsuccessfully!");
-    }
-  }
-
-  private static void useDatabase(long sessionId) throws TException {
-    String statement = "use test;";
-    ExecuteStatementReq req = new ExecuteStatementReq(sessionId, statement);
-    ExecuteStatementResp resp = client.executeStatement(req);
-    if (resp.getStatus().code == Global.SUCCESS_CODE) {
-      println("Use Database Successfully!");
-    } else {
-      println("Use Database Unsuccessfully!");
+    if(sessionId == -1) {
+      try {
+        ConnectResp resp = client.connect(req);
+        if (resp.status.code == Global.SUCCESS_CODE) {
+          println("Session id: " + resp.getSessionId() + "");
+          sessionId = resp.getSessionId();
+        } else {
+          println("Connection Failed.");
+        }
+      } catch (RPCException e) {
+        println(e.getMsg());
+      } catch (TException e) {
+        logger.error(e.getMessage());
+      }
+    }else{
+      println("You have already logged in.");
     }
   }
 
-  private static void createTable(long sessionId) throws TException {
-    String[] statements = {
-            "create table department (dept_name String(20), building String(15), budget Double, primary key(dept_name));",
-            "create table course (course_id String(8), title String(50), dept_name String(20), credits Int, primary key(course_id));",
-            "create table instructor (i_id String(5), i_name String(20) not null, dept_name String(20), salary Float, primary key(i_id));",
-            "create table student (s_id String(5), s_name String(20) not null, dept_name String(20), tot_cred Int, primary key(s_id));",
-            "create table advisor (s_id String(5), i_id String(5), primary key (s_id));"
-    };
-    for (String statement : statements) {
-      ExecuteStatementReq req = new ExecuteStatementReq(sessionId, statement);
+  // real disconnect
+  private static void disconnect(long SessionId){
+    DisconnectReq req = new DisconnectReq(SessionId);
+    if(sessionId == -1){
+      println("You have not logged in yet.");
+    }
+    else{
+      try{
+        DisconnectResp resp = client.disconnect(req);
+        if(resp.status.code == Global.SUCCESS_CODE){
+          println("Disconnection Succeeded.");
+          sessionId = -1;
+        }
+      }catch (RPCException e){
+        println(e.getMsg());
+      }catch (TException e){
+        logger.error(e.getMessage());
+      }
+    }
+  }
+
+//  public static void execute(){
+//    println("Please enter executable expression:");
+//    String expression = SCANNER.nextLine();
+//    ExecuteStatementReq req = new ExecuteStatementReq(sessionId, expression);
+//    try{
+//      ExecuteStatementResp resp = client.executeStatement(req);
+//      if(resp.status.code == Global.SUCCESS_CODE){
+//        println("Execution Succeeded.");
+//        println(resp.status.msg);
+//        if(resp.columnsList!=null){
+//          for(int i=0;i<resp.columnsList.size();i++){
+//            print(resp.columnsList.get(i)+" | ");
+//          }
+//          print("\n--------------------\n");
+//          for(int i=0;i<resp.rowList.size();i++){
+//            println(resp.rowList.get(i).get(0));
+//          }
+//        }
+//      }
+//      else{
+//        println("Execution Failed.");
+//        println(resp.status.msg);
+//      }
+//    }catch (RPCException e){
+//      println(e.getMsg());
+//    }catch (TException e){
+//      logger.error(e.getMessage());
+//    }
+//  }
+
+  public static void transaction(){
+    startTransactionReq req = new startTransactionReq();
+    try {
+      client.startTransaction(req);
+    } catch (TException e) {
+      logger.error(e.getMessage());
+    }
+  }
+
+  public static void commit() {
+    commitReq req = new commitReq();
+    try {
+      client.commit(req);
+    } catch (TException e) {
+      logger.error(e.getMessage());
+    }
+  }
+
+  public static void executeCommand(String msg){
+    ExecuteStatementReq req = new ExecuteStatementReq(sessionId, msg);
+    try{
       ExecuteStatementResp resp = client.executeStatement(req);
-      if (resp.getStatus().code == Global.SUCCESS_CODE) {
-        println("Create Table Successfully!");
-      } else {
-        println("Create Table Unsuccessfully!");
+      if(resp.status.code == Global.SUCCESS_CODE){
+        println("Execution Succeeded.");
+        println(resp.status.msg);
+        if(resp.columnsList!=null){
+          for(int i=0;i<resp.columnsList.size();i++){
+            print(resp.columnsList.get(i)+" | ");
+          }
+          print("\n--------------------\n");
+          for(int i=0;i<resp.rowList.size();i++){
+            println(resp.rowList.get(i).get(0));
+          }
+        }
       }
+      else{
+        println("Execution Failed.");
+        println(resp.status.msg);
+      }
+    }catch (RPCException e){
+      println(e.getMsg());
+    }catch (TException e){
+      logger.error(e.getMessage());
     }
   }
 
-  private static void insertData(long sessionId, List<String> statements) throws TException {
-    long startTime = System.currentTimeMillis();
-    boolean success = true;
-    for (String statement : statements) {
-      ExecuteStatementReq req = new ExecuteStatementReq(sessionId, statement);
-      ExecuteStatementResp resp = client.executeStatement(req);
-      if (resp.getStatus().code == Global.FAILURE_CODE) {
-        success = false;
+  public static void withdraw(){
+    String usr;
+    String pwd;
+    println("Begin to withdraw.");
+    println("Please enter your username:");
+    usr = SCANNER.nextLine();
+    println("Please enter your password:");
+    pwd = SCANNER.nextLine();
+    WithdrawReq req = new WithdrawReq(usr,pwd);
+    try{
+      WithdrawResp resp = client.withdraw(req);
+      if(resp.status.code == Global.SUCCESS_CODE){
+        println("Withdraw succeeded.");
       }
+      else{
+        println("Withdraw failed.");
+      }
+    }catch (RPCException e){
+      println(e.getMsg());
+    }catch (TException e){
+      logger.error(e.getMessage());
     }
-    if (success) {
-      println("Insert Data Successfully!");
-    } else {
-      println("Insert Data Unsuccessfully!");
-    }
-    println("It costs " + (System.currentTimeMillis() - startTime) + "ms.");
   }
 
-  private static void queryData(long sessionId) throws TException {
-    long startTime = System.currentTimeMillis();
-    String[] statements = {
-            "select s_id, s_name, dept_name, tot_cred from student;",
-            "select course_id, title from course where credits >= 4;",
-            "select s_id, s_name from student where dept_name = 'Physics';",
-            "select course_id, title from course join department on course.dept_name = department.dept_name where building <> 'Palmer';",
-            "select s_id from instructor join advisor on instructor.i_id = advisor.i_id where i_name = 'Luo';"
-    };
-    int[] results = {2000, 92, 96, 182, 44};
-    for (int i = 0; i < statements.length; i++) {
-      ExecuteStatementReq req = new ExecuteStatementReq(sessionId, statements[i]);
-      ExecuteStatementResp resp = client.executeStatement(req);
-      if (resp.getStatus().code == Global.SUCCESS_CODE) {
-        println("Query Data Successfully!");
-      } else {
-        println("Query Data Unsuccessfully!");
-      }
-      if (resp.getRowList().size() == results[i]) {
-        println("The Result Set is Correct!");
-      } else {
-        println("The Result Set is Wrong!");
-      }
-    }
-    println("It costs " + (System.currentTimeMillis() - startTime) + "ms.");
+  static Options createOptions() {
+    Options options = new Options();
+    options.addOption(Option.builder(HELP_ARGS)
+            .argName(HELP_NAME)
+            .desc("Display help information(optional)")
+            .hasArg(false)
+            .required(false)
+            .build()
+    );
+    options.addOption(Option.builder(HOST_ARGS)
+            .argName(HOST_NAME)
+            .desc("Host (optional, default 127.0.0.1)")
+            .hasArg(false)
+            .required(false)
+            .build()
+    );
+    options.addOption(Option.builder(PORT_ARGS)
+            .argName(PORT_NAME)
+            .desc("Port (optional, default 6667)")
+            .hasArg(false)
+            .required(false)
+            .build()
+    );
+    return options;
   }
 
-  private static void disconnect(long sessionId) throws TException {
-    DisconnectReq req = new DisconnectReq(sessionId);
-    DisconnectResp resp = client.disconnect(req);
-    if (resp.getStatus().code == Global.SUCCESS_CODE) {
-      println("Disconnect Successfully!");
-    } else {
-      println("Disconnect Unsuccessfully!");
+  static CommandLine parseCmd(String[] args) {
+    Options options = createOptions();
+    CommandLineParser parser = new DefaultParser();
+    CommandLine cmd = null;
+    try {
+      cmd = parser.parse(options, args);
+    } catch (ParseException e) {
+      logger.error(e.getMessage());
+      println("Invalid command line argument!");
+      System.exit(-1);
     }
+    return cmd;
+  }
+
+  static void showHelp() {
+
+    println("Welcome to ThssDB written by swy, lxy & lz");
+    println("To use the database system, you must register first, enter \" register;\" to register");
+    println("To connect the database, enter \"connect;\"");
+    println("To execute sql statements, enter \"execute\" first");
+    println("Notice that if you want to use \" use \" statement, you must use it with the sql statement in one statement.");
+    println("For example: use test;select * from tableTest;");
+    println("To disconnect from the system, enter \"disconnect;\"");
+    println("To withdraw your account, enter \"withdraw;\"");
+    println("Good Luck!");
+  }
+
+  static void echoStarting() {
+    println("----------------------");
+    println("Starting ThssDB Client");
+    println("----------------------");
+  }
+
+  static void print(String msg) {
+    SCREEN_PRINTER.print(msg);
+  }
+
+  static void println() {
+    SCREEN_PRINTER.println();
   }
 
   static void println(String msg) {

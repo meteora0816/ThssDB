@@ -20,7 +20,7 @@ public class Global {
   public static final String TRANSACTION = "begin transaction;";
   public static final String COMMIT = "commit;";
 
-  public static final String CREATE_DATABASE = "[Cc][Re][Ee][Aa][Tt][Ee](\\s)+[Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee].*";
+  public static final String CREATE_DATABASE = "[Cc][Rr][Ee][Aa][Tt][Ee](\\s)+[Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee].*";
   public static final String DROP_DATABASE = "[Dd][Rr][Oo][Pp](\\s)+[Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee].*";
   public static final String SHOW_DATABASES = "[Ss][Hh][Oo][Ww](\\s)+[Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee][Ss].*";
   public static final String USE = "[Uu][Ss][Ee].*";
