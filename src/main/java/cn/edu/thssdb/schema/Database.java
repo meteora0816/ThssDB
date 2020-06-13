@@ -4,6 +4,7 @@ import cn.edu.thssdb.query.QueryResult;
 import cn.edu.thssdb.query.QueryTable;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -15,6 +16,8 @@ public class Database {
   private String name; // 数据库名称
   private String DBdir; // 数据库存储路径
   private HashMap<String, Table> tables; // 数据库中的所有表
+  private HashMap<String, Boolean> modified; // 相应的表有无修改
+
   public DBLogger dbLogger;
   ReentrantReadWriteLock lock;
 
@@ -23,14 +26,16 @@ public class Database {
     this.name = name;
     this.DBdir = baseDir + '/' + name;
     this.tables = new HashMap<>();
+    this.modified = new HashMap<>();
+
     this.lock = new ReentrantReadWriteLock();
+    this.dbLogger = new DBLogger(name);
 
     File DBmeta = new File(this.DBdir + "/" + this.name + ".meta");
     File DB = new File(this.DBdir);
     if (!DB.exists()) {
       DB.mkdir();
       DBmeta.createNewFile();
-      this.dbLogger = new DBLogger(name);
     }
     else {
       recover(DBmeta);
@@ -49,6 +54,7 @@ public class Database {
     else {
       Table newTable = new Table(this.DBdir, name, columns);
       tables.put(name, newTable);
+      modified.put(name, true);
     }
   }
 
@@ -71,6 +77,7 @@ public class Database {
   }
 
   public Table getTable(String name) {
+    modified.put(name, true);
     return tables.get(name);
   }
 
@@ -89,20 +96,26 @@ public class Database {
         String tableName = vals[i+1];
         Table newTable = new Table(this.DBdir, tableName);
         tables.put(tableName, newTable);
+        modified.put(tableName, false);
       }
     } catch(IOException e) {
       e.printStackTrace();
     }
-
   }
 
   private void persist() {
     // 变更存储到磁盘
-    System.out.println(this.name+ ": persist");
+    // System.out.println(this.name+ ": persist");
     // 每一张表分别存储
     for (String key : tables.keySet()) {
-      Table table = tables.get(key);
-      table.persist();
+      if (modified.get(key) == true) {
+        Table table = tables.get(key);
+        table.persist();
+        modified.put(key, false);
+      }
+      else {
+        // System.out.println("skip");
+      }
     }
     // 存储元数据（有哪些表）
     /* databaseName.meta
@@ -130,13 +143,10 @@ public class Database {
     }
     this.tables.clear();
     File metaFile = new File(this.DBdir + "/" + this.name + ".meta");
-    System.gc();
     metaFile.delete();
     File logFile = new File(this.DBdir + "/" + this.name + ".log");
-    System.gc();
     logFile.delete();
     File dir = new File(this.DBdir);
-    System.gc();
     dir.delete();
   }
 

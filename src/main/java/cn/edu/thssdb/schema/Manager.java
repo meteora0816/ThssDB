@@ -5,12 +5,15 @@ import cn.edu.thssdb.utils.DBLogger;
 
 import javax.xml.crypto.Data;
 import java.io.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Manager {
     private HashMap<String, Database> databases;
-    private Database currentDB;
+
+    private Database currentDB = null;
     private DBLogger currentLogger;
     private String baseDir = "data";
     private String metaFile = "DB.meta";
@@ -81,10 +84,10 @@ public class Manager {
     }
 
     public void quit() {
-        System.out.println("manager quit!");
-        for (String key : this.databases.keySet()) {
-            this.databases.get(key).quit();
-        }
+//        for (String key : this.databases.keySet()) {
+//            this.databases.get(key).quit();
+//        }
+        if (currentDB != null) this.currentDB.quit();
         // 存储元数据（有哪些数据库）
     /* DB.meta:
        Database Num|Database1|Database2|... */
@@ -133,7 +136,7 @@ public class Manager {
         return ret.toString();
     }
 
-    public void appendLog(String str, int tnum){
+    public void appendLog(String str, int tnum) {
         currentLogger.append(str, tnum);
     }
 
