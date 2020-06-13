@@ -1,5 +1,6 @@
 package cn.edu.thssdb.client;
 
+import cn.edu.thssdb.parser.SQLParser;
 import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.utils.Global;
 import javafx.util.Pair;
@@ -21,6 +22,8 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.annotation.XmlElementDecl;
 import java.io.PrintStream;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Client {
 
@@ -119,9 +122,35 @@ public class Client {
   }
 
   private static boolean isCommand(String command) {
-    return command.startsWith(Global.CREATE_DATABASE)||command.startsWith(Global.DROP_DATABASE)||command.startsWith(Global.SHOW_DATABASES)||command.startsWith(Global.USE)||
-            command.startsWith(Global.CREATE_TABLE)||command.startsWith(Global.DROP_TABLE)||command.startsWith(Global.SHOW_DATABASE)||command.startsWith(Global.SHOW_TABLE)||
-            command.startsWith(Global.INSERT_INTO)||command.startsWith(Global.DELETE_FROM)||command.startsWith(Global.UPDATE)||command.startsWith(Global.SELECT);
+    Pattern create_db = Pattern.compile(Global.CREATE_DATABASE);
+    Pattern drop_db = Pattern.compile(Global.DROP_DATABASE);
+    Pattern show_dbs = Pattern.compile(Global.SHOW_DATABASES);
+    Pattern use = Pattern.compile(Global.USE);
+    Pattern create_table = Pattern.compile(Global.CREATE_TABLE);
+    Pattern drop_table = Pattern.compile(Global.DROP_TABLE);
+    Pattern show_db = Pattern.compile(Global.SHOW_DATABASE);
+    Pattern show_table = Pattern.compile(Global.SHOW_TABLE);
+    Pattern insert_into = Pattern.compile(Global.INSERT_INTO);
+    Pattern delete_from = Pattern.compile(Global.DELETE_FROM);
+    Pattern update = Pattern.compile(Global.UPDATE);
+    Pattern select = Pattern.compile(Global.SELECT);
+
+    Matcher create_db_match = create_db.matcher(command);
+    Matcher drop_db_match = drop_db.matcher(command);
+    Matcher show_dbs_match = show_dbs.matcher(command);
+    Matcher use_match = use.matcher(command);
+    Matcher create_table_match = create_table.matcher(command);
+    Matcher drop_table_match = drop_table.matcher(command);
+    Matcher show_db_match = show_db.matcher(command);
+    Matcher show_table_match = show_table.matcher(command);
+    Matcher insert_into_match = insert_into.matcher(command);
+    Matcher delete_from_match = delete_from.matcher(command);
+    Matcher update_match = update.matcher(command);
+    Matcher select_match = select.matcher(command);
+
+    return create_db_match.matches()||drop_db_match.matches()||show_dbs_match.matches()||use_match.matches()||
+            create_table_match.matches()||drop_table_match.matches()||show_db_match.matches()||show_table_match.matches()||
+            insert_into_match.matches()||delete_from_match.matches()||update_match.matches()||select_match.matches();
   }
 
   private static void getTime() {
