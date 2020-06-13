@@ -2,8 +2,10 @@ package cn.edu.thssdb.service;
 
 import cn.edu.thssdb.rpc.thrift.*;
 import cn.edu.thssdb.schema.Manager;
+import cn.edu.thssdb.utils.DBLogger;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.parser.*;
+import org.antlr.v4.runtime.RecognitionException;
 import org.apache.thrift.TException;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -127,7 +129,6 @@ public class IServiceHandler implements IService.Iface {
 
   @Override
   public ExecuteStatementResp executeStatement(ExecuteStatementReq req) throws RPCException, TException {
-    // TODO
     /*
     需要根据具体数据库操作实现。已经实现：创建/切换数据库，删除数据库，创建表，删除表, 显示表信息，
     显示所有数据库，显示数据库信息，插入行，删除行，更新行，单表有/无条件全部行/部分行查询
@@ -139,19 +140,28 @@ public class IServiceHandler implements IService.Iface {
       String statement = req.statement;
       System.out.println(statement);
 
-      CodePointCharStream charStream = CharStreams.fromString(statement);
-      //System.out.println(charStream.toString());
+      try {
+        CodePointCharStream charStream = CharStreams.fromString(statement);
+        //System.out.println(charStream.toString());
 
-      SQLLexer lexer = new SQLLexer(charStream);
-      CommonTokenStream tokens = new CommonTokenStream(lexer);
-      SQLParser parser = new SQLParser(tokens);
-      ParseTree tree = parser.parse();
-      // System.out.println(tree.toStringTree(parser));
-      ParseTreeWalker walker = new ParseTreeWalker();
-      SQLExecListener listener = new SQLExecListener(manager, autoCommit);
+        SQLLexer lexer = new SQLLexer(charStream);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        SQLParser parser = new SQLParser(tokens);
+        ParseTree tree = parser.parse();
+        ParseTreeWalker walker = new ParseTreeWalker();
 
-      walker.walk(listener,tree);
-      resp = listener.getResult();
+        SQLExecListener listener = new SQLExecListener(manager, autoCommit, charStream.toString());
+
+        walker.walk(listener,tree);
+
+        resp = listener.getResult();
+      } catch(Exception e) {
+        e.printStackTrace();
+        Status status = new Status(Global.FAILURE_CODE);
+        status.setMsg("Opration failed.");
+        resp.setStatus(status);
+      }
+
     }
     else{
       Status status = new Status(Global.FAILURE_CODE);

@@ -22,12 +22,14 @@ public class SQLExecListener extends SQLBaseListener {
     private Status status = new Status();
     private boolean success = true;
     private boolean autoCommit;
+    private String command;
 
-    public SQLExecListener(Manager mng, boolean ac) {
+    public SQLExecListener(Manager mng, boolean ac, String cmd) {
         super();
         manager = mng;
-        manager.recover();
+        // manager.recover();
         autoCommit = ac;
+        command = cmd;
     }
 
     @Override
@@ -1363,7 +1365,9 @@ public class SQLExecListener extends SQLBaseListener {
 
     @Override
     public void exitParse(SQLParser.ParseContext ctx) {
-        if (autoCommit) manager.quit();
+        if (!(command.startsWith(Global.SHOW_DATABASES)||command.startsWith(Global.CREATE_DATABASE)||command.startsWith(Global.USE)))
+            manager.appendLog(command);
+        manager.quit();
     }
 
 

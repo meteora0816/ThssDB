@@ -1,5 +1,6 @@
 package cn.edu.thssdb.utils;
 
+import javax.xml.bind.annotation.XmlElementDecl;
 import java.io.*;
 
 public class DBLogger {
@@ -21,6 +22,7 @@ public class DBLogger {
     }
 
     public void append(String str) {
+
         try {
             FileWriter writer = new FileWriter(logPath, true);
             writer.write(str);

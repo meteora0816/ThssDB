@@ -8,12 +8,14 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import cn.edu.thssdb.schema.Table;
+import cn.edu.thssdb.utils.DBLogger;
 
 public class Database {
 
   private String name; // 数据库名称
   private String DBdir; // 数据库存储路径
   private HashMap<String, Table> tables; // 数据库中的所有表
+  public DBLogger dbLogger;
   ReentrantReadWriteLock lock;
 
   public Database(String baseDir, String name) throws IOException {
@@ -28,6 +30,7 @@ public class Database {
     if (!DB.exists()) {
       DB.mkdir();
       DBmeta.createNewFile();
+      this.dbLogger = new DBLogger(name);
     }
     else {
       recover(DBmeta);
@@ -127,8 +130,10 @@ public class Database {
     }
     this.tables.clear();
     File metaFile = new File(this.DBdir + "/" + this.name + ".meta");
+    System.gc();
     metaFile.delete();
     File dir = new File(this.DBdir);
+    System.gc();
     dir.delete();
   }
 
