@@ -155,7 +155,7 @@ public class Table implements Iterable<Row>, Serializable {
 
   public void persist() {
     // 持久化到磁盘
-    // System.out.println(this.tableName + ": persist");
+     System.out.println(this.tableName + ": persist");
     serialize();
     saveMetaData();
   }
@@ -169,7 +169,7 @@ public class Table implements Iterable<Row>, Serializable {
       out.writeObject(this.index);
       out.close();
       fileOut.close();
-      // System.out.println("Serialized data is saved in " + this.tableDir + "/" + this.tableName + ".data");
+       System.out.println("Serialized data is saved in " + this.tableDir + "/" + this.tableName + ".data");
     } catch(IOException i) {
       i.printStackTrace();
     }
@@ -183,7 +183,7 @@ public class Table implements Iterable<Row>, Serializable {
       out.writeObject(this.columns);
       out.close();
       fileOut.close();
-      // System.out.println("Serialized metadata is saved in " + this.tableDir + "/" + this.tableName + ".meta");
+       System.out.println("Serialized metadata is saved in " + this.tableDir + "/" + this.tableName + ".meta");
     } catch(IOException i) {
       i.printStackTrace();
     }

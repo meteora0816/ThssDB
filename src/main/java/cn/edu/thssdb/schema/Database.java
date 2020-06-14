@@ -105,7 +105,7 @@ public class Database {
 
   private void persist() {
     // 变更存储到磁盘
-    // System.out.println(this.name+ ": persist");
+     System.out.println(this.name+ ": persist");
     // 每一张表分别存储
     for (String key : tables.keySet()) {
       if (modified.get(key) == true) {
@@ -114,7 +114,7 @@ public class Database {
         modified.put(key, false);
       }
       else {
-        // System.out.println("skip");
+         System.out.println("skip");
       }
     }
     // 存储元数据（有哪些表）
@@ -152,9 +152,9 @@ public class Database {
 
   public void quit() {
     // 退出数据库
-    for (String key : this.tables.keySet()) {
-      this.tables.get(key).persist();
-    }
+//    for (String key : this.tables.keySet()) {
+//      this.tables.get(key).persist();
+//    }
     this.persist();
   }
 

@@ -84,6 +84,7 @@ public class Manager {
     }
 
     public void quit() {
+        System.out.println("manager quit!");
 //        for (String key : this.databases.keySet()) {
 //            this.databases.get(key).quit();
 //        }

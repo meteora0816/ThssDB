@@ -31,7 +31,7 @@ public class SQLExecListener extends SQLBaseListener {
     public SQLExecListener(Manager mng, boolean ac, String cmd, int tn) {
         super();
         manager = mng;
-        // manager.recover();
+        if(ac) manager.recover();
         autoCommit = ac;
         command = cmd;
         tnum = tn;
@@ -495,6 +495,8 @@ public class SQLExecListener extends SQLBaseListener {
 
     @Override
     public void exitSelect_stmt(SQLParser.Select_stmtContext ctx) {
+        // manager.quit();
+        // manager.recover();
         ArrayList<String> resultTables = new ArrayList<>();  // 点前面的
         ArrayList<String> resultColumns = new ArrayList<>(); // 点后面的
         List<SQLParser.Result_columnContext> result_columnContexts = ctx.result_column();

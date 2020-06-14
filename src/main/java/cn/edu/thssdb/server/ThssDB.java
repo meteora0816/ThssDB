@@ -6,6 +6,7 @@ import cn.edu.thssdb.service.IServiceHandler;
 import cn.edu.thssdb.utils.Global;
 import com.sun.corba.se.spi.activation.Server;
 import org.apache.thrift.TProcessor;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.server.TNonblockingServer;
 import org.apache.thrift.server.TServer;
@@ -48,7 +49,10 @@ public class ThssDB {
   private static void setUp(IService.Processor processor) {
     try {
       transport = new TServerSocket(Global.DEFAULT_SERVER_PORT);
-      server = new TSimpleServer(new TServer.Args(transport).processor(processor));
+      TThreadPoolServer.Args serverParams=new TThreadPoolServer.Args(transport);
+      serverParams.protocolFactory(new TBinaryProtocol.Factory());
+      serverParams.processor(new IService.Processor<IService.Iface>(new IServiceHandler()));
+      TServer server=new TThreadPoolServer(serverParams); //简单的单线程服务模型，常用于测试
       logger.info("Starting ThssDB ...");
       server.serve();
     } catch (TTransportException e) {

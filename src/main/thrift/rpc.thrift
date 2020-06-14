@@ -64,6 +64,7 @@ struct ExecuteStatementResp{
 }
 
 struct startTransactionReq{
+  1: required i64 sessionId
 }
 
 struct startTransactionResp{
@@ -71,6 +72,7 @@ struct startTransactionResp{
 }
 
 struct commitReq{
+  1: required i64 sessionId
 }
 
 struct commitResp{

@@ -27,9 +27,9 @@ public class IServiceHandler implements IService.Iface {
   ArrayList<String> pwds = new ArrayList<>();
   ArrayList<Long> sessionIds = new ArrayList<>();
   public long sessionCnt = 0;
-  private boolean autoCommit = true;
-  private Manager manager;
-  private int tnum = 0;
+  private boolean autoCommit[] = new boolean[10];
+  private Manager manager[] = new Manager[10];
+  private int tnum[] = new int[10];
 
   private static final String toMD5(String pwd){
     String ret = "";
@@ -91,8 +91,9 @@ public class IServiceHandler implements IService.Iface {
         resp.setSessionId(sessionCnt);
         sessionCnt++;
         try {
-          manager = new Manager();
-          manager.switchDatabase("public");
+          manager[(int) sessionCnt-1] = new Manager();
+          manager[(int) sessionCnt-1].switchDatabase("public");
+          autoCommit[(int) sessionCnt-1] = true;
         }catch (IOException e){
           e.printStackTrace();
         }
@@ -118,7 +119,7 @@ public class IServiceHandler implements IService.Iface {
     long sessionId = req.sessionId;
     if(sessionIds.contains(sessionId)){
       sessionIds.remove(sessionId);
-      manager.quit();
+      manager[(int) req.sessionId].quit();
       resp.setStatus(new Status(Global.SUCCESS_CODE));
     }
     else{
@@ -151,7 +152,7 @@ public class IServiceHandler implements IService.Iface {
         ParseTree tree = parser.parse();
         ParseTreeWalker walker = new ParseTreeWalker();
 
-        SQLExecListener listener = new SQLExecListener(manager, autoCommit, charStream.toString(), tnum);
+        SQLExecListener listener = new SQLExecListener(manager[(int) req.sessionId], autoCommit[(int) req.sessionId], charStream.toString(), tnum[(int) req.sessionId]);
 
         walker.walk(listener,tree);
 
@@ -174,9 +175,9 @@ public class IServiceHandler implements IService.Iface {
   @Override
   public startTransactionResp startTransaction(startTransactionReq req) {
     startTransactionResp resp = new startTransactionResp();
-    autoCommit = false;
-    tnum = (int) (((int)((Math.random()*9+1)*10000) + sessionCnt*100000) % 10000000);
-    manager.appendLog("begin;", tnum);
+    autoCommit[(int) req.sessionId] = false;
+    tnum[(int) req.sessionId] = (int) (((int)((Math.random()*9+1)*10000) + sessionCnt*100000) % 10000000);
+    manager[(int) req.sessionId].appendLog("begin;", tnum[(int) req.sessionId]);
     resp.setStatus(new Status(Global.SUCCESS_CODE));
     return resp;
   }
@@ -184,10 +185,10 @@ public class IServiceHandler implements IService.Iface {
   @Override
   public commitResp commit(commitReq req) {
     commitResp resp = new commitResp();
-    manager.appendLog("commit;", tnum);
-    manager.quit();
-    autoCommit = true;
-    tnum = 0;
+    manager[(int) req.sessionId].appendLog("commit;", tnum[(int) req.sessionId]);
+    manager[(int) req.sessionId].quit();
+    autoCommit[(int) req.sessionId] = true;
+    tnum[(int) req.sessionId] = 0;
     resp.setStatus(new Status(Global.SUCCESS_CODE));
     return resp;
   }
@@ -219,7 +220,6 @@ public class IServiceHandler implements IService.Iface {
 
   @Override
   public WithdrawResp withdraw(WithdrawReq req) throws RPCException, TException{
-    // TODO
     WithdrawResp resp = new WithdrawResp();
     String usr = req.username;
     String pwd = toMD5(req.password);
